@@ -8,9 +8,9 @@
     <artifactId>java-external-merge-engine</artifactId>
     <version>0.1.0</version>
 
-    <name>Java Excel Streamer</name>
-    <description>Streaming XLSX reader based on Apache POI SAX for batch processing.</description>
-    <url>https://github.com/FaberNa/java-excel-streamer</url>
+    <name>Java Excel Merge Enginer</name>
+    <description>Scalable Java library for external sorting and merging of large files, designed to handle datasets bigger than available memory.</description>
+    <url>https://github.com/FaberNa/JavaExternalMergeEngine</url>
 
     <licenses>
         <license>
