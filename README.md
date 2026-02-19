@@ -84,13 +84,7 @@ Segment.afterDelimiter(char delimiter, int occurrenceIndex, int lengthAfter)
 
 Extracts characters immediately after the N-th occurrence of a delimiter.
 
-Parameters:
-
-- `delimiter` → the character separator
-- `occurrenceIndex` → 0-based index of delimiter occurrence
-- `lengthAfter` → number of characters to extract after the delimiter
-
-Example:
+Example (fixed length):
 
 ```java
 Segment.afterDelimiter('|', 1, 3)
@@ -104,17 +98,33 @@ For line:
 
 The 2nd `|` (index = 1) is after `bbb`.
 
-Extracted portion:
+Extracted portion (first 3 chars after the delimiter):
 
 ```
 "cc|"
 ```
 
-Characteristics:
+Example (until next delimiter):
 
-- Gracefully handles missing delimiters (returns empty segment)
-- No intermediate substring allocation
-- Useful for delimited file formats (CSV-like structures)
+```java
+Segment.afterDelimiter('|', 1, null)
+```
+
+For the same line:
+
+```
+"a|bbb|cc|dddd"
+```
+
+Extracted portion (all characters until the next `|`, or end-of-line if none):
+
+```
+"cc"
+```
+
+Notes:
+- `occurrenceIndex` is 0-based.
+- If the requested delimiter occurrence is not found, the segment is empty.
 
 ---
 

@@ -2,6 +2,13 @@ package org.catapano.model;
 
 import org.catapano.util.SegmentUtil;
 
+/**
+ * Segment defined by a delimiter and its occurrence index.
+ * Optionally, a fixed length after the delimiter can be specified; if not, it extends
+ * @param delimiter
+ * @param occurrenceIndex
+ * @param lengthAfter
+ */
 public record DelimitedSegment(char delimiter, int occurrenceIndex, Integer lengthAfter) implements Segment {
 
     public DelimitedSegment {
