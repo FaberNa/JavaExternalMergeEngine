@@ -27,6 +27,30 @@ class DelimitedSegmentTest {
                 .hasMessageContaining("lengthAfter");
     }
 
+    @ParameterizedTest(name = "lengthAfter=null: \"{0}\" -> \"{1}\"")
+    @CsvSource({
+            // nextDelim >= 0  => end = nextDelim (si ferma al prossimo delimiter)
+            "A;B;C;D, B",
+            "A;BLAST;C;D, BLAST",
+
+            // nextDelim < 0  => end = line.length() (fino a fine riga)
+            "A;B, B",
+
+            // delimPos < 0 => segmento vuoto (delimiter non trovato)
+            "ABC, ''",
+
+            // consecutive delimiters => substring vuota tra ;; (nextDelim immediato)
+            "A;;C, ''"
+    })
+    void shouldExtractUntilNextDelimiterOrEol_WhenLengthAfterIsNull(String line, String expected) {
+        var segment = new DelimitedSegment(';', 0, null);
+
+        var out = new StringBuilder();
+        segment.appendKey(line, out);
+
+        assertEquals(expected, out.toString());
+    }
+
     @Test
     void shouldAppendExpectedKeyPortion_afterNthDelimiter() {
         // ABC|123|HELLO|999
