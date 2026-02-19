@@ -29,6 +29,12 @@ public record KeySpec(List<Segment> segment) {
         return (a, b) -> keyComparator.compare(extractKey(a), extractKey(b));
     }
 
+    /**
+     * Compares two lines by their segments, without allocating substrings. Returns first non-zero segment comparison, or 0 if all segments are equal.
+     * @param a
+     * @param b
+     * @return
+     */
     private int compareBySegments(String a, String b) {
         for (Segment seg : segment) {
             int c = seg.compare(a, b);
