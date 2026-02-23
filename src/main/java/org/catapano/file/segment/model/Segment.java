@@ -1,4 +1,4 @@
-package org.catapano.model;
+package org.catapano.file.segment.model;
 
 
 public sealed interface Segment permits RangeSegment, DelimitedSegment {

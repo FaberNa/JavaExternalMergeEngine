@@ -1,6 +1,6 @@
-package org.catapano.model;
+package org.catapano.file.segment.model;
 
-import org.catapano.util.SegmentUtil;
+import org.catapano.file.segment.util.SegmentUtil;
 
 /**
  * Segment defined by a delimiter and its occurrence index.

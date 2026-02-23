@@ -1,6 +1,6 @@
-package org.catapano.model;
+package org.catapano.file.segment.model;
 
-import org.catapano.util.SegmentUtil;
+import org.catapano.file.segment.util.SegmentUtil;
 
 /**
  * Positional segment of a key.
@@ -24,6 +24,7 @@ public record RangeSegment(int start, int end) implements Segment {
 
         public int length() { return end - start; }
 
+        /** Compares the specified range of two lines char by char, without allocating substrings. */
         @Override
         public int compare(String a, String b) {
             return SegmentUtil.compareRangesCharByChar(a, start, end, b, start, end);

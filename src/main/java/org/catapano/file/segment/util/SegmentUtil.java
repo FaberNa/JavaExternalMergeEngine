@@ -1,4 +1,4 @@
-package org.catapano.util;
+package org.catapano.file.segment.util;
 
 public final class SegmentUtil {
     private SegmentUtil() {}

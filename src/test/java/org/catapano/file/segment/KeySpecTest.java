@@ -1,5 +1,7 @@
-package org.catapano.model;
+package org.catapano.file.segment;
 
+import org.catapano.file.segment.model.KeySpec;
+import org.catapano.file.segment.model.Segment;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

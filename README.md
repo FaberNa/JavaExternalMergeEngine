@@ -139,3 +139,11 @@ The design follows these principles:
 
 This model enables flexible, high-performance external sorting strategies over very large files.
 
+How to for test 
+
+gawk 'BEGIN{
+payload="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+for(i=1;i<=10000000;i++){
+printf "%010d %s\n", i, payload
+}
+}' > test_1gb.txt

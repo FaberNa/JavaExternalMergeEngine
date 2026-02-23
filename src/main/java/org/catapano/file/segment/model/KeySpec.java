@@ -1,4 +1,4 @@
-package org.catapano.model;
+package org.catapano.file.segment.model;
 
 import java.util.Comparator;
 import java.util.List;
