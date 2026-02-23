@@ -1,4 +1,4 @@
-package org.catapano.file.segment.model;
+package org.github.faberna.file.segment.model;
 
 
 public sealed interface Segment permits RangeSegment, DelimitedSegment {

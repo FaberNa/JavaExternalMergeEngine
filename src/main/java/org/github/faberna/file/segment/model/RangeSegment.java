@@ -1,6 +1,6 @@
-package org.catapano.file.segment.model;
+package org.github.faberna.file.segment.model;
 
-import org.catapano.file.segment.util.SegmentUtil;
+import org.github.faberna.file.segment.util.SegmentUtil;
 
 /**
  * Positional segment of a key.

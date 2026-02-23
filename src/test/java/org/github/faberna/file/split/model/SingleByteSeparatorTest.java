@@ -1,4 +1,4 @@
-package org.catapano.file.split.model;
+package org.github.faberna.file.split.model;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

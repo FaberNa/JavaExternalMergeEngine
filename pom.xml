@@ -121,7 +121,7 @@
                         <configuration>
                             <excludes>
                                 <!-- Esclude intero package -->
-                                <exclude>org/github/fabercata/excelbatcher/config/**</exclude>
+                                <exclude>org/github/faberna/file/splitter/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>

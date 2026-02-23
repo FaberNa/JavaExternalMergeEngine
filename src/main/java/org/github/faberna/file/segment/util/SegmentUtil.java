@@ -1,4 +1,4 @@
-package org.catapano.file.segment.util;
+package org.github.faberna.file.segment.util;
 
 public final class SegmentUtil {
     private SegmentUtil() {}

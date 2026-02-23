@@ -1,7 +1,7 @@
-package org.catapano.file.segment;
+package org.github.faberna.file.segment;
 
-import org.catapano.file.segment.model.DelimitedSegment;
-import org.catapano.file.segment.model.Segment;
+import org.github.faberna.file.segment.model.DelimitedSegment;
+import org.github.faberna.file.segment.model.Segment;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

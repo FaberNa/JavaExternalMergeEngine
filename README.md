@@ -1,4 +1,5 @@
 [![codecov](https://codecov.io/gh/FaberNa/JavaExternalMergeEngine/graph/badge.svg?token=JMZAIXDO1O)](https://codecov.io/gh/FaberNa/JavaExternalMergeEngine)
+
 # JavaExternalMergeEngine
 ### Comparator behavior
 

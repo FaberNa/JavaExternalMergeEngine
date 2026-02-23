@@ -1,4 +1,4 @@
-package org.catapano.file.split.model;
+package org.github.faberna.file.split.model;
 /**
  * Newline type detected in the input.
  *

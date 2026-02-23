@@ -1,7 +1,7 @@
-package org.catapano.file.segment;
+package org.github.faberna.file.segment;
 
-import org.catapano.file.segment.model.KeySpec;
-import org.catapano.file.segment.model.Segment;
+import org.github.faberna.file.segment.model.KeySpec;
+import org.github.faberna.file.segment.model.Segment;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

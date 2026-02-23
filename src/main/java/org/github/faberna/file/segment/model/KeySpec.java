@@ -1,4 +1,4 @@
-package org.catapano.file.segment.model;
+package org.github.faberna.file.segment.model;
 
 import java.util.Comparator;
 import java.util.List;
