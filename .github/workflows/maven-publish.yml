@@ -11,9 +11,19 @@ permissions:
 jobs:
   test-and-coverage:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (push)
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout (pull_request head)
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
@@ -31,8 +41,11 @@ jobs:
         with:
           name: jacoco-html
           path: target/site/jacoco
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: FaberNa/JavaExternalMergeEngine
+          files: target/site/jacoco/jacoco.xml
+          fail_ci_if_error: true
