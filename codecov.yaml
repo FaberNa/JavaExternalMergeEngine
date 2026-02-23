@@ -1,0 +1,3 @@
+fixes:
+  - "org/github/faberna/::src/main/java/org/github/faberna/"
+  - "org/github/faberna/::src/test/java/org/github/faberna/"
