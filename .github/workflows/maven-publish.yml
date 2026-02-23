@@ -49,3 +49,4 @@ jobs:
           slug: FaberNa/JavaExternalMergeEngine
           files: target/site/jacoco/jacoco.xml
           fail_ci_if_error: true
+          verbose: true
