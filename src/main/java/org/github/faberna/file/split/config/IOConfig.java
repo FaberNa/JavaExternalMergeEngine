@@ -13,7 +13,7 @@ public record IOConfig(
         if (copyBufferBytes <= 0) {
             throw new IllegalArgumentException("copyBufferBytes must be positive");
         }
-        if (parallelism <= 0) {
+        if (!preferSequential && parallelism <= 0) {
             throw new IllegalArgumentException("parallelism must be positive");
         }
         if (filePrefix == null || filePrefix.isBlank()) {
@@ -26,9 +26,9 @@ public record IOConfig(
 
     public static IOConfig defaults() {
         return new IOConfig(
-                64 * 1024,
+                64 * 1024, // standard IO buffer size for file copying
                 Runtime.getRuntime().availableProcessors(),
-                true,
+                false,
                 "part-",
                 ".txt"
         );
