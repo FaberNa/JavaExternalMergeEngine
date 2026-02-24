@@ -41,4 +41,4 @@ build/
 
 
 ### local files ###
-src/test/resources/test_1gb.txt:wq
+src/test/resources/test_1gb.txt
