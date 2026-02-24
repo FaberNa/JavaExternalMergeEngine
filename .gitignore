@@ -38,3 +38,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+
+### local files ###
+src/test/resources/test_1gb.txt:wq
