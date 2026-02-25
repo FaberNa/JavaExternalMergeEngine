@@ -21,20 +21,40 @@ public record KeySpec(List<Segment> segment) {
         return this::compareBySegments;
     }
 
-    /** Allows custom key comparator (materializes key). */
+    /**
+     * Materializes the key via {@link #extractKey(String)} (allocates),
+     * then compares using the provided comparator.
+     */
     public Comparator<String> comparator(Comparator<String> keyComparator) {
-        if (keyComparator == null) {
-            throw new IllegalArgumentException("keyComparator is required");
-        }
+        if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
         return (a, b) -> keyComparator.compare(extractKey(a), extractKey(b));
     }
 
-    /**
-     * Compares two lines by their segments, without allocating substrings. Returns first non-zero segment comparison, or 0 if all segments are equal.
-     * @param a
-     * @param b
-     * @return
-     */
+    public <K> Comparator<String> comparator(java.util.function.Function<String, K> keyMapper,
+                                             Comparator<? super K> keyComparator) {
+        if (keyMapper == null) throw new IllegalArgumentException("keyMapper is required");
+        if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
+        return (a, b) -> keyComparator.compare(keyMapper.apply(extractKey(a)),
+                keyMapper.apply(extractKey(b)));
+    }
+
+    public <K> Comparator<String> comparatorFromLine(java.util.function.Function<String, K> keyExtractor,
+                                                     Comparator<? super K> keyComparator) {
+        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
+        if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
+        return (a, b) -> keyComparator.compare(keyExtractor.apply(a), keyExtractor.apply(b));
+    }
+
+    public Comparator<String> comparatorLong(java.util.function.ToLongFunction<String> keyExtractor) {
+        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
+        return Comparator.comparingLong(keyExtractor);
+    }
+
+    public Comparator<String> comparatorInt(java.util.function.ToIntFunction<String> keyExtractor) {
+        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
+        return Comparator.comparingInt(keyExtractor);
+    }
+
     private int compareBySegments(String a, String b) {
         for (Segment seg : segment) {
             int c = seg.compare(a, b);
@@ -43,16 +63,10 @@ public record KeySpec(List<Segment> segment) {
         return 0;
     }
 
-    /**
-     * Extracts the full key by concatenating all segments. Used for materialized keys.
-     * @param line
-     * @return
-     */
+    /** Allocates. Use only for debugging / materialized-key comparators. */
     public String extractKey(String line) {
         StringBuilder sb = new StringBuilder();
-        for (Segment seg : segment) {
-            seg.appendKey(line, sb);
-        }
+        for (Segment seg : segment) seg.appendKey(line, sb);
         return sb.toString();
     }
 }

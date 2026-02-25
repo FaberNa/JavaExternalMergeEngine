@@ -14,6 +14,11 @@ public final class SingleByteSeparator implements Separator {
 
     private final byte sep;
 
+    @Override
+    public byte[] bytes() {
+        return new byte[]{this.sep}; // usa il nome reale del campo
+    }
+
     private final int bufferSize;
     public SingleByteSeparator(byte sep, int bufferSize) {
         if (bufferSize <= 0) throw new IllegalArgumentException("bufferSize must be > 0");

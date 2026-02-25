@@ -66,50 +66,45 @@ public final class InMemorySortingPartWriter implements PartWriter {
     public void endPart(Path partFile) throws IOException {
         Objects.requireNonNull(partFile, "partFile is required");
 
-        // Build a comparator for whole lines using KeySpec.
-        // KeySpec is composed of Segments; its comparator delegates comparisons to those segments.
-        // If you want a custom ordering over the materialized key, use comparator(keyComparator).
-        Comparator<String> lineComparator = keySpec.comparator(keyComparator);
 
-        // Sort records by their line content (ending does not affect ordering)
-        buffer.sort((r1, r2) -> lineComparator.compare(r1.line(), r2.line()));
 
-        // When the original input has no final newline, we may have ONE record with LineEnding.NONE.
-        // After sorting, that record might not be last anymore; if we write it as NONE in the middle,
-        // the next line will be concatenated. To keep records separated, we only allow NONE for the
-        // last record written in this part.
-        LineEnding defaultEnding = buffer.stream()
-                .map(LineRecord::ending)
-                .filter(e -> e != LineEnding.NONE)
-                .findFirst()
-                .orElse(LineEnding.LF);
+            Comparator<String> primary = keySpec.comparator();
 
-        // Write once to temp then atomic replace
-        Path tmp = partFile.resolveSibling(partFile.getFileName().toString() + ".tmp");
-        try (BufferedWriter w = Files.newBufferedWriter(tmp, charset)) {
-            for (int i = 0; i < buffer.size(); i++) {
-                LineRecord r = buffer.get(i);
-                w.write(r.line());
+            Comparator<String> totalOrder = (a, b) -> {
+                int c = primary.compare(a, b);
+                if (c != 0) return c;
+                return a.compareTo(b);
+            };
 
-                boolean last = (i == buffer.size() - 1);
-                LineEnding ending = r.ending();
+            buffer.sort((r1, r2) -> totalOrder.compare(r1.line(), r2.line()));
 
-                // If NONE is not on the last record, write a real line separator to avoid concatenation.
-                if (ending == LineEnding.NONE && !last) {
-                    ending = defaultEnding;
+            LineEnding defaultEnding = buffer.stream()
+                    .map(LineRecord::ending)
+                    .filter(e -> e != LineEnding.NONE)
+                    .findFirst()
+                    .orElse(LineEnding.LF);
+
+            Path tmp = partFile.resolveSibling(partFile.getFileName().toString() + ".tmp");
+            try (BufferedWriter w = Files.newBufferedWriter(tmp, charset)) {
+                for (int i = 0; i < buffer.size(); i++) {
+                    LineRecord r = buffer.get(i);
+                    w.write(r.line());
+
+                    boolean last = (i == buffer.size() - 1);
+                    LineEnding ending = r.ending();
+
+                    if (ending == LineEnding.NONE && !last) ending = defaultEnding;
+                    if (last && ending == defaultEnding) ending = LineEnding.NONE;
+
+                    w.write(ending.text());
                 }
-                if (last && ending == defaultEnding) {
-                    ending = LineEnding.NONE;
-                }
-                w.write(ending.text());
             }
-        }
 
-        try {
-            Files.move(tmp, partFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } finally {
-            // Ready for next part (also ensures we don't keep memory if an exception occurs)
-            buffer.clear();
-        }
+            try {
+                Files.move(tmp, partFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } finally {
+                buffer.clear();
+            }
+
     }
 }

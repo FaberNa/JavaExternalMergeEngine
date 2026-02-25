@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class IOConfigTest {
 
-
     @Test
     void defaults_ShouldReturnExpectedContractValues() {
         IOConfig cfg = IOConfig.defaults();

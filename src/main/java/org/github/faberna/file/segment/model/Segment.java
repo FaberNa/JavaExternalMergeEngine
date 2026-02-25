@@ -20,7 +20,7 @@ public sealed interface Segment permits RangeSegment, DelimitedSegment {
      * @param lengthAfter
      * @return
      */
-    static Segment afterDelimiter(char delimiter, int occurrenceIndex, int lengthAfter) {
+    static Segment afterDelimiter(char delimiter, int occurrenceIndex, Integer lengthAfter) {
         return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter);
     }// per extractKey()
 }

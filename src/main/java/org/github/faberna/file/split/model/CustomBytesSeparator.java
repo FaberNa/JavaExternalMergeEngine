@@ -6,6 +6,10 @@ public final class CustomBytesSeparator implements Separator {
     int call=0;
 
     @Override
+    public byte[] bytes() {
+        return new byte[]{}; // usa il nome reale del campo
+    }
+    @Override
     public long findNextSeparatorEnd(FileChannel ch, long from, long fileSize) {
         call++;
         if (call == 1) {

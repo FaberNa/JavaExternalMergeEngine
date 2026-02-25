@@ -11,7 +11,7 @@ import org.github.faberna.file.split.splitter.SequentialStreamingSplitter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public final class SplitEngine {
+ public final class SplitEngine {
 
     private final SplitPlanner planner = new SplitPlanner();
     private final ParallelRangeSplitter parallel = new ParallelRangeSplitter();

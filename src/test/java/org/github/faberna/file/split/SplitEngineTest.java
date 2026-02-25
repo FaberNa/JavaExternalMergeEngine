@@ -93,7 +93,7 @@ class SplitEngineTest {
     @Test
     void shouldSplitAndSortParallelFileByMaxBytes() throws Exception {
 
-        Path input = Path.of("src/test/resources/unsorted.txt");
+        Path input = Path.of("src/test/resources/test_1Gb.txt");
         Path outputDir = tempDir;
        // Path outputDir = Path.of("src/test/resources/output");;
 

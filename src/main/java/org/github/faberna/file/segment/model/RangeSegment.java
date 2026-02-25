@@ -24,15 +24,24 @@ public record RangeSegment(int start, int end) implements Segment {
 
         public int length() { return end - start; }
 
-        /** Compares the specified range of two lines char by char, without allocating substrings. */
-        @Override
-        public int compare(String a, String b) {
-            return SegmentUtil.compareRangesCharByChar(a, start, end, b, start, end);
+    @Override
+    public int compare(String a, String b) {
+        // Compare [start, end) treating missing chars as '\0'
+        for (int i = start; i < end; i++) {
+            char ca = (i < a.length()) ? a.charAt(i) : 0;
+            char cb = (i < b.length()) ? b.charAt(i) : 0;
+            if (ca != cb) {
+                return Character.compare(ca, cb);
+            }
         }
+        return 0;
+    }
 
-        @Override
-        public void appendKey(String line, StringBuilder out) {
-            SegmentUtil.appendRange(line, start, end, out);
-        }
+    @Override
+    public void appendKey(String line, StringBuilder out) {
+        int to = Math.min(end, line.length());
+        if (start >= to) return;
+        out.append(line, start, to);
+    }
     }
 

@@ -14,6 +14,11 @@ public final class NewlineSeparator implements Separator {
 
     private final int bufferSize;
 
+    @Override
+    public byte[] bytes() {
+        return new byte[]{'\n'};
+    }
+
     public NewlineSeparator(int bufferSize) {
         if (bufferSize <= 0) throw new IllegalArgumentException("bufferSize must be > 0");
         this.bufferSize = bufferSize;

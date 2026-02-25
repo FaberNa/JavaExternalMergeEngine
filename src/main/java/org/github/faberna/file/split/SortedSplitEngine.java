@@ -73,11 +73,10 @@ public final class SortedSplitEngine {
             throw new IllegalArgumentException("maxBytesPerPart must be > 0");
         }
 
-         InMemorySortingPartWriter inMemoryPartWriter = new InMemorySortingPartWriter(keySpec, keyComparator, charset);
-         PartWriterFactory factory = () -> inMemoryPartWriter;
+         PartWriterFactory factory = () -> new InMemorySortingPartWriter(keySpec, keyComparator, charset);;
 
          if (io.preferSequential()) {
-             splitEngine.splitByMaxBytes(input, outputDir, maxBytesPerPart, separator, io,inMemoryPartWriter);
+             splitEngine.splitByMaxBytes(input, outputDir, maxBytesPerPart, separator, io, factory.create());
              return;
          }
 

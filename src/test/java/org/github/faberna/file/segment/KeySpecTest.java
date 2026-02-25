@@ -124,6 +124,24 @@ class KeySpecTest {
         assertThat(cmp.compare("ABCXEFG", "ABCXEFG")).isZero();
     }
 
+
+    @Test
+    void comparatorWithCustomIntegerComparatorShouldUseSorterByNumber() {
+        var spec = KeySpec.of(
+                Segment.range(0, 6) // key part 2
+        );
+
+        Comparator<String> byIntKey =
+                spec.comparator(Integer::parseInt, Integer::compare);
+        var cmp = spec.comparator(byIntKey);
+
+        // reverse order => "005" -> "5"  > "0003" -> "3"=> compare should be > 0
+        assertThat(cmp.compare("005", "0003")).isGreaterThan(0);
+
+        // sanity check: if keys equal, comparator returns 0
+        assertThat(cmp.compare("0025", "000025")).isZero();
+    }
+
     @Test
     void comparatorShouldThrow_whenKeyComparatorIsNull() {
         var spec = KeySpec.of(Segment.range(0, 3));
