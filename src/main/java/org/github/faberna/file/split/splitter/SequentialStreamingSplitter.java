@@ -59,13 +59,14 @@ public final class SequentialStreamingSplitter {
 
         // NOTE: We decode lines as UTF-8 because PartWriter accepts String. Ensure the writer uses the same charset.
         final java.nio.charset.Charset decodeCharset = java.nio.charset.StandardCharsets.UTF_8;
+        int bufSize = Math.max(io.copyBufferBytes(), 256 * 1024);
 
         try (FileChannel in = FileChannel.open(input, READ)) {
             long fileSize = in.size();
             if (fileSize == 0) return;
 
-            ByteBuffer buf = ByteBuffer.allocateDirect(io.copyBufferBytes());
-
+            //ByteBuffer buf = ByteBuffer.allocateDirect(io.copyBufferBytes());
+            ByteBuffer buf = ByteBuffer.allocate(bufSize); // heap buffer -> enables fast bulk appends
             int partIndex = 1;
             long partBytes = 0;
             boolean splitArmed = false;
@@ -78,14 +79,19 @@ public final class SequentialStreamingSplitter {
             boolean pendingCR = false;
 
             long pos = 0;
-            while (pos < fileSize) {
+            //while (pos < fileSize) {
+            while (true) {
                 buf.clear();
-                int read = in.read(buf, pos);
+                //int read = in.read(buf, pos);
+                int read = in.read(buf);
                 if (read <= 0) break;
                 buf.flip();
+                byte[] arr = buf.array();
+                int lineStart = 0;
 
                 for (int i = 0; i < read; i++) {
-                    byte b = buf.get(i);
+                    //byte b = buf.get(i);
+                    byte b = arr[i];
 
                     // Resolve CR carried from previous buffer
                     if (pendingCR) {
@@ -94,6 +100,7 @@ public final class SequentialStreamingSplitter {
                             wroteAnyLineInPart = true;
                             partBytes += emitted;
                             pendingCR = false;
+                            lineStart = i + 1; // skip '\n'
                             continue;
                         } else {
                             long emitted = emitLineBytes(partWriter, lineBuf, LineEnding.CR, decodeCharset);
@@ -101,23 +108,41 @@ public final class SequentialStreamingSplitter {
                             partBytes += emitted;
                             pendingCR = false;
                             // re-process current byte normally
-                            i--;
-                            continue;
+                            //i--;
+                            //continue;
+                            // do NOT consume current byte; it belongs to the next line
+                            lineStart = i;
+                            // continue normal processing below (fall-through)
                         }
                     }
                     // case without CR carryover
                     if (b == (byte) '\n') {
+                        // append bytes of the line in one shot
+                        int len = i - lineStart;
+                        if (len > 0) {
+                            lineBuf.write(arr, lineStart, len);
+                        }
                         long emitted = emitLineBytes(partWriter, lineBuf, LineEnding.LF, decodeCharset);
                         wroteAnyLineInPart = true;
                         partBytes += emitted;
+                        lineStart = i + 1;
+
                     } else if (b == (byte) '\r') {
+                        // append bytes of the line (excluding the CR)
+                        int len = i - lineStart;
+                        if (len > 0) {
+                            lineBuf.write(arr, lineStart, len);
+                        }
+
                         if (i + 1 < read) {
-                            byte next = buf.get(i + 1);
+                            //byte next = buf.get(i + 1);
+                            byte next = arr[i + 1];
                             if (next == (byte) '\n') {
                                 long emitted = emitLineBytes(partWriter, lineBuf, LineEnding.CRLF, decodeCharset);
                                 wroteAnyLineInPart = true;
                                 partBytes += emitted;
                                 i++; // consume '\n'
+                                lineStart = i + 1;
                             } else {
                                 long emitted = emitLineBytes(partWriter, lineBuf, LineEnding.CR, decodeCharset);
                                 wroteAnyLineInPart = true;
@@ -126,9 +151,10 @@ public final class SequentialStreamingSplitter {
                         } else {
                             // CR at end of buffer -> decide on next buffer
                             pendingCR = true;
+                            lineStart = i + 1;
                         }
-                    } else {
-                        lineBuf.write(b);
+//                    } else {
+//                        lineBuf.write(b);
                     }
 
                     // Arm split once we hit the target; split happens ONLY after a line ending
@@ -144,8 +170,14 @@ public final class SequentialStreamingSplitter {
                         wroteAnyLineInPart = false;
                     }
                 }
-
+                // Tail bytes: if the buffer ended mid-line (no line ending encountered),
+                // append the remaining bytes so the line can be completed in the next buffer
+                // or emitted at EOF with LineEnding.NONE.
+                if (lineStart < read) {
+                    lineBuf.write(arr, lineStart, read - lineStart);
+                }
                 pos += read;
+
             }
 
             // EOF: resolve pending CR
@@ -160,7 +192,7 @@ public final class SequentialStreamingSplitter {
                 partBytes += emitted;
             }
 
-            if (wroteAnyLineInPart) {
+            if (wroteAnyLineInPart ) {
                 partWriter.endPart(partPath(outputDir, io, partIndex));
             }
         }
@@ -186,7 +218,14 @@ public final class SequentialStreamingSplitter {
 
         if (separator == null) throw new IllegalArgumentException("separator is required");
         if (io == null) io = IOConfig.defaults();
+        boolean isNewlineSep = separator instanceof NewlineSeparator;
+        boolean isSingleByteSep = separator instanceof SingleByteSeparator;
 
+        SingleByteSeparator sbs = null;
+        if ( isSingleByteSep)
+        {
+             sbs = (SingleByteSeparator) separator;
+        }
         Files.createDirectories(outputDir);
 
         try (FileChannel in = FileChannel.open(input, READ)) {
@@ -196,7 +235,8 @@ public final class SequentialStreamingSplitter {
             ByteBuffer buf = ByteBuffer.allocateDirect(io.copyBufferBytes());
 
             int partIndex = 1;
-            FileChannel out = openPart(outputDir, io, partIndex);
+            //FileChannel out = openPart(outputDir, io, partIndex);
+            java.io.BufferedOutputStream out = openPart(outputDir, io, partIndex);
 
             long partBytes = 0;
             boolean splitArmed = false;
@@ -223,11 +263,11 @@ public final class SequentialStreamingSplitter {
                         byte b = buf.get(i);
                         int sepEnd = -1; // exclusive index within current buffer
                         // check if the current byte is a separator. If so, sepEnd is set to the index immediately after the separator (exclusive).
-                        if (separator instanceof SingleByteSeparator sbs) {
+                        if (isSingleByteSep) {
                             if (b == sbs.getSep()) {
                                 sepEnd = i + 1;
                             }
-                        } else if (separator instanceof NewlineSeparator) {
+                        } else if (isNewlineSep) {
                             // First resolve CR carried from previous buffer
                             if (pendingCR) {
                                 // this logic serve if ur read /n as first byte in current buffer, then the separator is CRLF across buffers. Otherwise, it was a lone CR.
@@ -318,10 +358,18 @@ public final class SequentialStreamingSplitter {
      * @return
      * @throws IOException
      */
-    private static FileChannel openPart(Path outputDir, IOConfig io, int idx) throws IOException {
+    /*private static FileChannel openPart(Path outputDir, IOConfig io, int idx) throws IOException {
         // create file name with 4-digit zero-padded part index, e.g. "part-0001.txt"
         Path out = outputDir.resolve(String.format(Locale.ROOT, "%s%04d%s", io.filePrefix(), idx, io.fileExtension()));
         return FileChannel.open(out, WRITE, CREATE, TRUNCATE_EXISTING);
+    }*/
+
+    private static java.io.BufferedOutputStream openPart(Path outputDir, IOConfig io, int idx) throws IOException {
+        Path out = outputDir.resolve(String.format(Locale.ROOT, "%s%04d%s", io.filePrefix(), idx, io.fileExtension()));
+        return new java.io.BufferedOutputStream(
+                Files.newOutputStream(out, WRITE, CREATE, TRUNCATE_EXISTING),
+                1 << 20 // 1MB buffer
+        );
     }
 
     /**
@@ -342,6 +390,17 @@ public final class SequentialStreamingSplitter {
                 throw new IOException("Failed to make progress while writing to file");
             }
         }
+    }
+
+    private static void writeSlice(java.io.OutputStream out, ByteBuffer src, int offset, int len) throws IOException {
+        // Versione semplice: copia i len bytes dal ByteBuffer in un byte[]
+        byte[] tmp = new byte[len];
+        int oldPos = src.position();
+        src.position(offset);
+        src.get(tmp);
+        src.position(oldPos);
+
+        out.write(tmp);
     }
 
 }

@@ -1,12 +1,17 @@
 package org.github.faberna.file.merge.model;
 
+/**
+ * Heap element: decoded line for comparison + raw record bytes for output.
+ */
 public final class HeapItem {
-    final String line;          // current record
-    final int chunkIndex;       // which chunk
-    final long seq;             // tie-breaker for stability (optional)
+    public final String line;
+    public final byte[] recordBytes;
+    public final int chunkIndex;
+    public final long seq;
 
-    HeapItem(String line, int chunkIndex, long seq) {
+    public HeapItem(String line, byte[] recordBytes, int chunkIndex, long seq) {
         this.line = line;
+        this.recordBytes = recordBytes;
         this.chunkIndex = chunkIndex;
         this.seq = seq;
     }

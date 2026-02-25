@@ -170,7 +170,7 @@ class SplitEngineTest {
 
         Path input = Path.of("src/test/resources/unsorted.txt");
         Path outputDir = tempDir;
-        //Path outputDir = Path.of("src/test/resources/output");;
+        //Path outputDir = Path.of("src/test/resources/output");
 
         Segment segment = new RangeSegment(0,10);
         KeySpec keySpec = new KeySpec(List.of(segment)); // sort by first 10 chars of each line
@@ -187,6 +187,7 @@ class SplitEngineTest {
         );
 
         long maxBytes = 100L * 1024 * 1024; // 100MB per part
+        //long maxBytes = 1L * 1024 ; // 100MB per part
 
         engine.splitByMaxBytes(
                 input,
@@ -234,7 +235,8 @@ class SplitEngineTest {
         }
 
         // Ensure total size matches original file
-        assertEquals(inputSize, totalSize, "Sum of parts must equal original file size");
+        //+2 is for last line without newline char, which is still a line and should be included in the total size this is beacuse we split in two parts
+        assertEquals( totalSize, inputSize,"Sum of parts must equal original file size");
     }
 
     @Test
@@ -294,8 +296,8 @@ class SplitEngineTest {
         }
 
         // Ensure total size matches original file
-        // plus 1 byte because of the last line without newline char, which is still a line and should be included in the total size this is beacuse we split in two parts
-        assertEquals(inputSize, totalSize+1, "Sum of parts must equal original file size");
+        // plus 2 byte because of the last line without newline char, which is still a line and should be included in the total size this is beacuse we split in two parts
+        assertEquals( totalSize+1, inputSize,"Sum of parts must equal original file size");
     }
 
     @Test
@@ -356,6 +358,6 @@ class SplitEngineTest {
 
         // Ensure total size matches original file
         // plus 1 byte because of the last line without newline char, which is still a line and should be included in the total size this is beacuse we split in two parts
-        assertEquals(inputSize, totalSize+1, "Sum of parts must equal original file size");
+        assertEquals(totalSize+1,inputSize, "Sum of parts must equal original file size");
     }
 }

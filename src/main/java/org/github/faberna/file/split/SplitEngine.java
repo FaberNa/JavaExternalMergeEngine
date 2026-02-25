@@ -7,13 +7,17 @@ import org.github.faberna.file.split.plan.SplitPlanner;
 import org.github.faberna.file.split.sorter.PartWriter;
 import org.github.faberna.file.split.splitter.ParallelRangeSplitter;
 import org.github.faberna.file.split.splitter.SequentialStreamingSplitter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
  public final class SplitEngine {
 
-    private final SplitPlanner planner = new SplitPlanner();
+     private static final Logger log = LoggerFactory.getLogger(SplitEngine.class);
+
+     private final SplitPlanner planner = new SplitPlanner();
     private final ParallelRangeSplitter parallel = new ParallelRangeSplitter();
     private final SequentialStreamingSplitter streaming = new SequentialStreamingSplitter();
 
@@ -25,13 +29,15 @@ import java.nio.file.Path;
             IOConfig io,
             PartWriter partWriter
     ) throws IOException {
-
+        log.info("splitByMaxBytes sequential start");
         if (io == null) io = IOConfig.defaults();
         if (partWriter == null) throw new IllegalArgumentException("partWriter is required");
         if (io.preferSequential()) {
             streaming.splitByMaxBytes(input, outputDir, maxBytes, sep, io, partWriter);
+            log.info("splitByMaxBytes sequential end");
             return;
         }
+
 
         // For now, PartWriter mode is supported only in sequential streaming.
         throw new UnsupportedOperationException("PartWriter mode currently supported only with IOConfig.preferSequential()=true");

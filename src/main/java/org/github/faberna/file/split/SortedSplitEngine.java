@@ -31,6 +31,7 @@ import java.util.Objects;
  */
 public final class SortedSplitEngine {
 
+
     private final SplitEngine splitEngine;
     private final KeySpec keySpec;
     private final Comparator<String> keyComparator;
@@ -87,8 +88,6 @@ public final class SortedSplitEngine {
                  separator
          );
 
-
-
          if (io.parallelism() > 1) {
              parallel.execute(plan, io,factory);
          } else {
@@ -96,7 +95,7 @@ public final class SortedSplitEngine {
              parallel.execute(plan, new IOConfig(
                      io.copyBufferBytes(),
                      1,
-                     io.preferSequential(),
+                     false,
                      io.filePrefix(),
                      io.fileExtension()
              ),factory);

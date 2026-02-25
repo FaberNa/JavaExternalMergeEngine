@@ -1,5 +1,6 @@
 package org.github.faberna.file.split.splitter;
 
+import org.github.faberna.file.split.SplitEngine;
 import org.github.faberna.file.split.config.IOConfig;
 import org.github.faberna.file.split.plan.SplitPlan;
 import org.github.faberna.file.split.model.LineEnding;
@@ -7,6 +8,8 @@ import org.github.faberna.file.split.model.Range;
 import org.github.faberna.file.split.sorter.InMemorySortingPartWriter;
 import org.github.faberna.file.split.sorter.PartWriter;
 import org.github.faberna.file.split.sorter.PartWriterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,8 +35,10 @@ import static org.github.faberna.file.split.SplitUtil.emitLine;
  * For NAS, consider using a single-threaded streaming copy instead.
  */
 public final class ParallelRangeSplitter {
+    private static final Logger log = LoggerFactory.getLogger(ParallelRangeSplitter.class);
 
     public void execute(SplitPlan plan, IOConfig io) throws IOException {
+        log.info("Starting parallel splitter");
         if (plan == null) throw new IllegalArgumentException("plan is required");
         if (io == null) io = IOConfig.defaults();
 
@@ -67,11 +72,13 @@ public final class ParallelRangeSplitter {
         doShutdown(pool, futures);
 
         }
+        log.info("Finished parallel splitter");
     }
 
 
 
     public void execute(SplitPlan plan, IOConfig io, PartWriterFactory factory) throws IOException {
+        log.info("Starting parallel splitter");
         if (plan == null) throw new IllegalArgumentException("plan is required");
         if (io == null) io = IOConfig.defaults();
         if (factory == null) throw new IllegalArgumentException("factory is required");
@@ -109,9 +116,9 @@ public final class ParallelRangeSplitter {
                     }
                 }));
             }
-
             doShutdown(pool, futures);
         }
+        log.info("Finished parallel splitter");
     }
 
     /** Determine the number of threads to use based on IOConfig and number of parts.
