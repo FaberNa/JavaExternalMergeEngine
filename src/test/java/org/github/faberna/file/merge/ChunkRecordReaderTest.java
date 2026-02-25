@@ -1,7 +1,6 @@
 package org.github.faberna.file.merge;
 
 import org.github.faberna.file.merge.model.HeapItem;
-import org.github.faberna.file.split.model.CustomBytesSeparator;
 import org.github.faberna.file.split.model.NewlineSeparator;
 import org.github.faberna.file.split.model.Separator;
 import org.github.faberna.file.split.model.SingleByteSeparator;

@@ -12,7 +12,6 @@ import java.nio.file.Path;
  */
  final class ChunkRecordReader implements AutoCloseable {
     private final java.io.BufferedInputStream in;
-    private final Separator sep;
     private final byte[] sepBytes;
     private final int sepLen;
     private final byte[] buf = new byte[256 * 1024];
@@ -20,9 +19,8 @@ import java.nio.file.Path;
     private int limit = 0;
     private boolean eof = false;
 
-    private ChunkRecordReader(java.io.BufferedInputStream in, Separator separator) throws IOException {
+    private ChunkRecordReader(java.io.BufferedInputStream in, Separator separator) {
         this.in = in;
-        this.sep = separator;
         this.sepBytes = separator.bytes();
         this.sepLen =sepBytes.length;
     }

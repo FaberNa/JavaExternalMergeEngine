@@ -8,6 +8,9 @@ import java.nio.charset.Charset;
 
 public class SplitUtil {
 
+    private SplitUtil() {
+        /* This utility class should not be instantiated */
+    }
 
     public static void emitLine(PartWriter writer, ByteArrayOutputStream lineBuf, LineEnding ending, Charset charset) {
         String line = lineBuf.toString(charset);

@@ -51,15 +51,7 @@ public final class MergeEngine {
             Charset charset,
             Separator recordSeparator
     ) throws IOException {
-        if (keySpecComparator == null) {
-            throw new IllegalArgumentException("keySpecComparator is required");
-        }
-        if (charset == null) {
-            throw new IllegalArgumentException("charset is required");
-        }
-        if (recordSeparator == null || recordSeparator.length() == 0) {
-            throw new IllegalArgumentException("recordSeparatorBytes is required");
-        }
+        checkParameters(keySpecComparator, charset, recordSeparator);
         final byte[] bytes = recordSeparator.bytes();
 
         List<ChunkRecordReader> readers = new ArrayList<>(sortedChunks.size());
@@ -100,19 +92,23 @@ public final class MergeEngine {
             for (ChunkRecordReader r : readers) {
                 try {
                     if (r != null) r.close();
-                } catch (IOException ignored) {
+                } catch (IOException _) {
+                   // ignore close exceptions
                 }
             }
         }
     }
 
-    /** Common default separators. */
-    public static final class DefaultSeparators {
-        private DefaultSeparators() {}
-        public static final byte[] LF = new byte[]{'\n'};
-        public static final byte[] CRLF = new byte[]{'\r', '\n'};
-        public static final byte[] CR = new byte[]{'\r'};
+    private static void checkParameters(Comparator<String> keySpecComparator, Charset charset, Separator recordSeparator) {
+        if (keySpecComparator == null) {
+            throw new IllegalArgumentException("keySpecComparator is required");
+        }
+        if (charset == null) {
+            throw new IllegalArgumentException("charset is required");
+        }
+        if (recordSeparator == null || recordSeparator.length() == 0) {
+            throw new IllegalArgumentException("recordSeparatorBytes is required");
+        }
     }
-
 
 }

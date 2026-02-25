@@ -29,9 +29,9 @@ public class SortAndMergeFileTest {
     @TempDir
     Path tempDir;
 
-   //@AfterEach
+   @AfterEach
    void cleanUp() throws IOException {
-       Path outputDir = Path.of("src/test/resources/output");;
+       Path outputDir = Path.of("src/test/resources/output");
        // Clean up tempDir after each test
        Files.walk(outputDir)
                .filter(Files::isRegularFile)
@@ -48,7 +48,6 @@ public class SortAndMergeFileTest {
     @EnabledIfSystemProperty(named = "run.large.tests", matches = "true")
     void kWayMerge_shouldMergeAndSplitParallelRealFileUsingKeySpecAndNewLineSeparator() throws IOException {
         Path input = Path.of("src/test/resources/test_1gb.txt");
-
         Path outputDir = Path.of("src/test/resources/output");;
         //Path outputDir = tempDir;
 
@@ -95,7 +94,6 @@ public class SortAndMergeFileTest {
         assertTrue(outBytes.length > 0, "output should not be empty");
         assertEquals((byte) '\n', outBytes[outBytes.length - 1], "output should end with record separator");
 
-        String outText = new String(outBytes, StandardCharsets.UTF_8);
 
         // because string ends with '|', split() returns last token empty -> ignore it
         long totalBytes = parts.stream()
@@ -161,7 +159,6 @@ public class SortAndMergeFileTest {
         assertTrue(outBytes.length > 0, "output should not be empty");
         assertEquals((byte) '\n', outBytes[outBytes.length - 1], "output should end with record separator");
 
-        String outText = new String(outBytes, StandardCharsets.UTF_8);
 
         // because string ends with '|', split() returns last token empty -> ignore it
         long totalBytes = parts.stream()
