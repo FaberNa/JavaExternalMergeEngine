@@ -26,7 +26,7 @@ class MergeEngineKeySpecSeparatorTest {
     void kWayMerge_shouldMergeUsingKeySpecAndNewLineSeparator() throws IOException {
         // Given: custom separator (NOT newline)
         Separator sep = new NewlineSeparator(8);
-        Path tmp = Path.of("src/test/resources/output");
+        //Path tmp = Path.of("src/test/resources/output");
         // And: KeySpec based on fixed-width numeric-ish key in first 4 chars (lexicographic works for 0001,0002,...)
         KeySpec keySpec = KeySpec.of( Segment.range(0, 4));
 
@@ -107,12 +107,12 @@ class MergeEngineKeySpecSeparatorTest {
     void kWayMerge_shouldMergeRealFileUsingKeySpecAndNewLineSeparator() throws IOException {
         // Given: custom separator (NOT newline)
         Separator sep = new NewlineSeparator(8);
-        Path tmp = Path.of("src/test/resources");
+        //Path tmp = Path.of("src/test/resources");
         // And: KeySpec based on fixed-width numeric-ish key in first 4 chars (lexicographic works for 0001,0002,...)
         KeySpec keySpec = KeySpec.of( Segment.range(0, 4));
 
         // Two already-sorted chunks using the SAME separator
-        Path c1 = tmp.resolve("unsorted.txt");
+        Path c1 = tmp.resolve("chunk-1-k1..txt");
         Path c2 = tmp.resolve("chunk-2-k1.txt");
         Path out = tmp.resolve("out-k1.txt");
 

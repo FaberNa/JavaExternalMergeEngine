@@ -31,11 +31,12 @@ class SplitEngineTest {
 
         SplitEngine engine = new SplitEngine();
 
+        String filePrefix = "partBig-";
         IOConfig io = new IOConfig(
                 8 * 1024 * 1024,   // copy buffer
                 4,                 // parallelism
                 false,             // preferSequential
-                "part-",
+                filePrefix,
                 ".txt"
         );
 
@@ -53,7 +54,7 @@ class SplitEngineTest {
 
         // List generated files
         var parts = Files.list(outputDir)
-                .filter(p -> p.getFileName().toString().startsWith("part-"))
+                .filter(p -> p.getFileName().toString().startsWith(filePrefix))
                 .sorted()
                 .toList();
 
@@ -93,7 +94,7 @@ class SplitEngineTest {
     @Test
     void shouldSplitAndSortParallelFileByMaxBytes() throws Exception {
 
-        Path input = Path.of("src/test/resources/test_1Gb.txt");
+        Path input = Path.of("src/test/resources/unsorted.txt");
         Path outputDir = tempDir;
        // Path outputDir = Path.of("src/test/resources/output");;
 
