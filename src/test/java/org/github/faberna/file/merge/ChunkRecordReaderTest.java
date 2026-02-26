@@ -89,7 +89,7 @@ class ChunkRecordReaderTest {
         return Stream.of(
                 Arguments.of("LF", new SingleByteSeparator((byte) '\n',1)),
                 Arguments.of("US-0x1F", new SingleByteSeparator((byte) 0x1F,2)),
-                Arguments.of("CRLF", new NewlineSeparator(2))
+                Arguments.of("CRLF", new NewlineSeparator(2, null))
         );
     }
 

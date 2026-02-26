@@ -1,5 +1,6 @@
 package org.github.faberna.file.split.model;
 
+import org.github.faberna.file.split.util.FileUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -26,12 +27,23 @@ class NewlineSeparatorTest {
         Path file = writeBytes(content.getBytes(StandardCharsets.US_ASCII));
         long fileSize = Files.size(file);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, 0, fileSize);
             assertEquals(expectedEndExclusive, end);
         }
     }
+
+    @ParameterizedTest(name = "{index} input={0} expectedSeparator={1}")
+    @MethodSource("newlineCases2")
+    void shouldFindNewlineSeparatorOnRealFile(String content, String expectedSeparator) throws Exception {
+        Path file = writeBytes(content.getBytes(StandardCharsets.US_ASCII));
+
+        String separator = FileUtil.recognizeNewLineSeparatorForFile(file);
+        assertEquals(expectedSeparator, separator);
+    }
+
+
 
     private static Stream<Arguments> newlineCases() {
         return Stream.of(
@@ -41,10 +53,18 @@ class NewlineSeparatorTest {
         );
     }
 
+    private static Stream<Arguments> newlineCases2() {
+        return Stream.of(
+                Arguments.of("AAA\nBBB", "\n"),
+                Arguments.of("AAA\r\nBBB", "\r\n"),
+                Arguments.of("AAA\rBBB", "\r")
+        );
+    }
+
     @Test
     void shouldRejectNonPositiveBufferSize() {
-        assertThrows(IllegalArgumentException.class, () -> new NewlineSeparator(0));
-        assertThrows(IllegalArgumentException.class, () -> new NewlineSeparator(-1));
+        assertThrows(IllegalArgumentException.class, () -> new NewlineSeparator(0, null));
+        assertThrows(IllegalArgumentException.class, () -> new NewlineSeparator(-1, null));
     }
 
     @Test
@@ -56,7 +76,7 @@ class NewlineSeparatorTest {
         long fileSize = Files.size(file);
 
         // bufferSize=5 ensures first read can end exactly on CR boundary in many implementations
-        NewlineSeparator sep = new NewlineSeparator(5);
+        NewlineSeparator sep = new NewlineSeparator(5, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, 0, fileSize);
             assertEquals(6L, end);
@@ -69,7 +89,7 @@ class NewlineSeparatorTest {
         Path file = writeBytes("ABCDEF".getBytes(StandardCharsets.US_ASCII));
         long fileSize = Files.size(file);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, 0, fileSize);
             assertEquals(-1L, end);
@@ -82,7 +102,7 @@ class NewlineSeparatorTest {
         Path file = writeBytes("A\nB\nC".getBytes(StandardCharsets.US_ASCII));
         long fileSize = Files.size(file);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, 2, fileSize);
             assertEquals(4L, end);
@@ -107,7 +127,7 @@ class NewlineSeparatorTest {
         long fileSize = Files.size(file);
 
         // bufferSize=5 makes first read likely end exactly at the CR boundary
-        NewlineSeparator sep = new NewlineSeparator(5);
+        NewlineSeparator sep = new NewlineSeparator(5, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, 0, fileSize);
             assertEquals(5L, end);
@@ -120,7 +140,7 @@ class NewlineSeparatorTest {
         Path file = writeBytes("AAA\nBBB".getBytes(StandardCharsets.US_ASCII));
         long fileSize = Files.size(file);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         try (FileChannel ch = FileChannel.open(file)) {
             long end = sep.findNextSeparatorEnd(ch, -123, fileSize);
             assertEquals(4L, end); // same as from=0
@@ -132,7 +152,7 @@ class NewlineSeparatorTest {
         Path file = writeBytes("AAA\nBBB".getBytes(StandardCharsets.US_ASCII));
         long fileSize = Files.size(file);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         try (FileChannel ch = FileChannel.open(file)) {
             assertEquals(-1L, sep.findNextSeparatorEnd(ch, fileSize, fileSize));
             assertEquals(-1L, sep.findNextSeparatorEnd(ch, fileSize + 10, fileSize));

@@ -107,7 +107,7 @@ public final class MergeEngine {
             throw new IllegalArgumentException("charset is required");
         }
         if (recordSeparator == null || recordSeparator.length() == 0) {
-            throw new IllegalArgumentException("recordSeparatorBytes is required");
+            throw new IllegalArgumentException("record Separator is required");
         }
     }
 

@@ -67,7 +67,7 @@ public class SortAndMergeFileTest {
 
         long maxBytes = 100L * 1024 * 1024; // 100MB per part
 
-        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes());
+        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes(), null);
         engine.splitByMaxBytes(
                 input,
                 outputDir,
@@ -132,7 +132,7 @@ public class SortAndMergeFileTest {
 
         long maxBytes = 100L * 1024 * 1024; // 100MB per part
 
-        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes());
+        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes(), null);
         engine.splitByMaxBytes(
                 input,
                 outputDir,
@@ -198,7 +198,7 @@ public class SortAndMergeFileTest {
         );
 
         int numParts = 2; // split into 2 parts
-        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes());
+        NewlineSeparator separator = new NewlineSeparator(io.copyBufferBytes(), null);
         engine.splitByParts(
                 input,
                 outputDir,

@@ -1,5 +1,6 @@
-package org.github.faberna.file.split;
+package org.github.faberna.file.split.util;
 
+import org.github.faberna.file.split.SplitUtil;
 import org.github.faberna.file.split.model.LineEnding;
 import org.github.faberna.file.split.sorter.PartWriter;
 import org.junit.jupiter.api.Test;

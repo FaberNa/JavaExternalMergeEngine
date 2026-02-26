@@ -43,6 +43,15 @@ import java.nio.file.Path;
         throw new UnsupportedOperationException("PartWriter mode currently supported only with IOConfig.preferSequential()=true");
     }
 
+     /**
+      * Split the input file by max bytes (record-safe).
+      * @param input
+      * @param outputDir
+      * @param maxBytes
+      * @param sep
+      * @param io
+      * @throws IOException
+      */
     public void splitByMaxBytes(
             Path input,
             Path outputDir,
@@ -77,6 +86,15 @@ import java.nio.file.Path;
         }
     }
 
+    /**
+     * Split the input file into a given number of parts (record-safe).
+     * @param input
+     * @param outputDir
+     * @param parts
+     * @param sep
+     * @param io
+     * @throws IOException
+     */
     public void splitByParts(
             Path input,
             Path outputDir,
@@ -97,6 +115,15 @@ import java.nio.file.Path;
         throw new UnsupportedOperationException("PartWriter mode currently supported only with IOConfig.preferSequential()=true");
     }
 
+    /**
+     * Split the input file into a given number of parts (record-safe).
+     * @param input
+     * @param outputDir
+     * @param parts
+     * @param sep
+     * @param io
+     * @throws IOException
+     */
     public void splitByParts(
             Path input,
             Path outputDir,

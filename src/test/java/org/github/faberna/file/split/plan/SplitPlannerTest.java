@@ -55,7 +55,7 @@ class SplitPlannerPlanByPartsTest {
         Files.createDirectories(outDir);
 
         SplitPlanner planner = new SplitPlanner();
-        NewlineSeparator sep = new NewlineSeparator(8); // buffer small but ok
+        NewlineSeparator sep = new NewlineSeparator(8, null); // buffer small but ok
 
         SplitPlan plan = planner.planByMaxBytes(input, outDir, maxBytes, sep);
         List<Range> parts = plan.parts();
@@ -91,7 +91,7 @@ class SplitPlannerPlanByPartsTest {
     void shouldThrowIOExceptionWhenInputMissing() {
         Path missing = tmp.resolve("missing.txt");
         Path outDir = tmp.resolve("out-missing");
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
 
         SplitPlanner planner = new SplitPlanner();
         assertThrows(IOException.class, () -> planner.planByMaxBytes(missing, outDir, 10L, sep));
@@ -113,7 +113,7 @@ class SplitPlannerPlanByPartsTest {
         Path out = tmp.resolve("out");
         Files.createDirectories(out);
 
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
         SplitPlanner planner = new SplitPlanner();
 
         SplitPlan plan = planner.planByParts(input, out, 3, sep);
@@ -153,7 +153,7 @@ class SplitPlannerPlanByPartsTest {
         Files.createDirectories(out);
 
         SplitPlanner planner = new SplitPlanner();
-        NewlineSeparator sep = new NewlineSeparator(16);
+        NewlineSeparator sep = new NewlineSeparator(16, null);
 
         SplitPlan plan = planner.planByParts(input, out, 1, sep);
 
@@ -171,7 +171,7 @@ class SplitPlannerPlanByPartsTest {
         Files.createDirectories(out);
 
         SplitPlanner planner = new SplitPlanner();
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
 
         assertThrows(ArithmeticException.class,
                 () -> planner.planByParts(input, out, 0, sep));
@@ -184,7 +184,7 @@ class SplitPlannerPlanByPartsTest {
         Files.createDirectories(out);
 
         SplitPlanner planner = new SplitPlanner();
-        NewlineSeparator sep = new NewlineSeparator(8);
+        NewlineSeparator sep = new NewlineSeparator(8, null);
 
         SplitPlan plan = planner.planByParts(input, out, 10, sep);
 

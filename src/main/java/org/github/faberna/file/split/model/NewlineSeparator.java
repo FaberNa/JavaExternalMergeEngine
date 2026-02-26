@@ -4,6 +4,9 @@ package org.github.faberna.file.split.model;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Objects;
 
 /**
@@ -12,18 +15,43 @@ import java.util.Objects;
  */
 public final class NewlineSeparator implements Separator {
 
+    /** Buffer size for reading chunks of the file. Larger buffers may reduce IO calls but use more memory.
+     * Default is 8KB, which is a common buffer size for file IO.
+     */
     private final int bufferSize;
+    private final String stringNewLineSeparator;
 
     @Override
     public byte[] bytes() {
-        return new byte[]{'\n'};
+        return stringNewLineSeparator.getBytes(StandardCharsets.UTF_8);
     }
 
-    public NewlineSeparator(int bufferSize) {
-        if (bufferSize <= 0) throw new IllegalArgumentException("bufferSize must be > 0");
+
+    /**
+     * Creates a NewlineSeparator with the specified buffer size and newline separator string.
+     * If the provided newline separator is null or empty, it defaults to the system's line separator. Please note that is good
+     * @param bufferSize
+     * @param newLineSeparator
+     */
+    public NewlineSeparator(int bufferSize, String newLineSeparator) {
+        if (newLineSeparator == null || newLineSeparator.isEmpty()) {
+            this.stringNewLineSeparator = System.lineSeparator();
+        }else{
+            this.stringNewLineSeparator = newLineSeparator.trim();
+        }
+
+            if (bufferSize <= 0) throw new IllegalArgumentException("bufferSize must be > 0");
         this.bufferSize = bufferSize;
     }
 
+    /**
+     * Searches for the next newline separator (LF, CRLF, or CR) starting from 'from' offset.
+     * @param ch
+     * @param from
+     * @param fileSize
+     * @return
+     * @throws IOException
+     */
     @Override
     public long findNextSeparatorEnd(FileChannel ch, long from, long fileSize) throws IOException {
         Objects.requireNonNull(ch, "ch");

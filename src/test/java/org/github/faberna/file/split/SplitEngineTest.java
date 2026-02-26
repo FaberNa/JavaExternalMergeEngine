@@ -1,6 +1,7 @@
 package org.github.faberna.file.split;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 
 import org.github.faberna.file.segment.model.KeySpec;
@@ -8,10 +9,16 @@ import org.github.faberna.file.segment.model.RangeSegment;
 import org.github.faberna.file.segment.model.Segment;
 import org.github.faberna.file.split.config.IOConfig;
 import org.github.faberna.file.split.model.NewlineSeparator;
+import org.github.faberna.file.split.model.Separator;
+import org.github.faberna.file.split.plan.SplitPlan;
+import org.github.faberna.file.split.plan.SplitPlanner;
+import org.github.faberna.file.split.splitter.ParallelRangeSplitter;
+import org.github.faberna.file.split.splitter.SequentialStreamingSplitter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -46,7 +53,7 @@ class SplitEngineTest {
                 input,
                 outputDir,
                 maxBytes,
-                new NewlineSeparator(io.copyBufferBytes()),
+                new NewlineSeparator(io.copyBufferBytes(), null),
                 io
         );
 
@@ -118,7 +125,7 @@ class SplitEngineTest {
                 input,
                 outputDir,
                 maxBytes,
-                new NewlineSeparator(io.copyBufferBytes()),
+                new NewlineSeparator(io.copyBufferBytes(), null),
                 io
         );
 
@@ -193,7 +200,7 @@ class SplitEngineTest {
                 input,
                 outputDir,
                 maxBytes,
-                new NewlineSeparator(io.copyBufferBytes()),
+                new NewlineSeparator(io.copyBufferBytes(), null),
                 io
         );
 
@@ -265,7 +272,7 @@ class SplitEngineTest {
                 input,
                 outputDir,
                 numberOfParts,
-                new NewlineSeparator(io.copyBufferBytes()),
+                new NewlineSeparator(io.copyBufferBytes(), null),
                 io
         );
 
@@ -326,7 +333,7 @@ class SplitEngineTest {
                 input,
                 outputDir,
                 numberOfParts,
-                new NewlineSeparator(io.copyBufferBytes()),
+                new NewlineSeparator(io.copyBufferBytes(), null),
                 io
         );
 
@@ -360,4 +367,106 @@ class SplitEngineTest {
         // plus 1 byte because of the last line without newline char, which is still a line and should be included in the total size this is beacuse we split in two parts
         assertEquals(totalSize+1,inputSize, "Sum of parts must equal original file size");
     }
+
+
+    @Test
+    void splitByMaxBytes_shouldUseSequentialStreaming_whenPreferSequentialTrue() throws Exception {
+        SplitEngine engine = new SplitEngine();
+
+        SequentialStreamingSplitter streaming = mock(SequentialStreamingSplitter.class);
+        ParallelRangeSplitter parallel = mock(ParallelRangeSplitter.class);
+        SplitPlanner planner = mock(SplitPlanner.class);
+
+        inject(engine, "streaming", streaming);
+        inject(engine, "parallel", parallel);
+        inject(engine, "planner", planner);
+
+        IOConfig io = new IOConfig(256 * 1024, 4, true, "part-", ".txt");
+
+        Path input = Path.of("input.txt");
+        Path outDir = Path.of("out");
+        Separator sep = new NewlineSeparator(1, null);
+
+        engine.splitByMaxBytes(input, outDir, 1024L, sep, io);
+
+        verify(streaming, times(1)).splitByMaxBytes(input, outDir, 1024L, sep, io);
+        verifyNoInteractions(planner);
+        verifyNoInteractions(parallel);
+    }
+
+
+    @Test
+    void splitByMaxBytes_shouldPlanAndExecuteParallelWithSingleThreadConfig_whenParallelismIsOneOrLess() throws Exception {
+        SplitEngine engine = new SplitEngine();
+
+        SequentialStreamingSplitter streaming = mock(SequentialStreamingSplitter.class);
+        ParallelRangeSplitter parallel = mock(ParallelRangeSplitter.class);
+        SplitPlanner planner = mock(SplitPlanner.class);
+        SplitPlan plan = new SplitPlan(tempDir,tempDir, List.of());
+
+        inject(engine, "streaming", streaming);
+        inject(engine, "parallel", parallel);
+        inject(engine, "planner", planner);
+
+        IOConfig io = new IOConfig(512 * 1024, 1, false, "p-", ".dat");
+
+        Path input = Path.of("input.txt");
+        Path outDir = Path.of("out");
+        Separator sep = new NewlineSeparator(1, null);
+
+        when(planner.planByMaxBytes(input, outDir, 2048L, sep)).thenReturn(plan);
+
+        engine.splitByMaxBytes(input, outDir, 2048L, sep, io);
+
+        verify(streaming, never()).splitByMaxBytes(any(), any(), anyLong(), any(), any());
+        verify(planner, times(1)).planByMaxBytes(input, outDir, 2048L, sep);
+
+        verify(parallel, times(1)).execute(eq(plan), argThat(cfg ->
+                cfg != null
+                        && cfg.copyBufferBytes() == io.copyBufferBytes()
+                        && cfg.parallelism() == 1
+                        && !cfg.preferSequential()
+                        && cfg.filePrefix().equals(io.filePrefix())
+                        && cfg.fileExtension().equals(io.fileExtension())
+        ));
+    }
+
+    @Test
+    void splitByMaxBytes_shouldPlanAndExecuteParallel_whenParallelismGreaterThanOne() throws Exception {
+        SplitEngine engine = new SplitEngine();
+
+        SequentialStreamingSplitter streaming = mock(SequentialStreamingSplitter.class);
+        ParallelRangeSplitter parallel = mock(ParallelRangeSplitter.class);
+        SplitPlanner planner = mock(SplitPlanner.class);
+        SplitPlan plan = new SplitPlan(tempDir,tempDir, List.of());
+
+        inject(engine, "streaming", streaming);
+        inject(engine, "parallel", parallel);
+        inject(engine, "planner", planner);
+
+        IOConfig io = new IOConfig(256 * 1024, 4, false, "part-", ".txt");
+
+        Path input = Path.of("input.txt");
+        Path outDir = Path.of("out");
+        Separator sep = new NewlineSeparator(1, null);
+
+        when(planner.planByMaxBytes(input, outDir, 1024L, sep)).thenReturn(plan);
+
+        engine.splitByMaxBytes(input, outDir, 1024L, sep, io);
+
+        verify(streaming, never()).splitByMaxBytes(any(), any(), anyLong(), any(), any());
+        verify(planner, times(1)).planByMaxBytes(input, outDir, 1024L, sep);
+        verify(parallel, times(1)).execute(plan, io);
+    }
+
+    private static void inject(Object target, String fieldName, Object value) {
+        try {
+            Field f = target.getClass().getDeclaredField(fieldName);
+            f.setAccessible(true);
+            f.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to inject field: " + fieldName, e);
+        }
+    }
+
 }
