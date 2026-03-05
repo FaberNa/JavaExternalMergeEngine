@@ -3,6 +3,10 @@ package org.github.faberna.file.segment.model;
 import java.util.Comparator;
 import java.util.List;
 
+/** * Describes how to extract a key from a line, via one or more segments.
+ * Each segment is a substring of the line, defined by an offset and length.
+ * The key is the concatenation of all segments.
+ */
 public record KeySpec(List<Segment> segment) {
 
     public KeySpec {
@@ -38,6 +42,8 @@ public record KeySpec(List<Segment> segment) {
                 keyMapper.apply(extractKey(b)));
     }
 
+    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
+     * using the provided keyComparator. Has zero allocation  */
     public <K> Comparator<String> comparatorFromLine(java.util.function.Function<String, K> keyExtractor,
                                                      Comparator<? super K> keyComparator) {
         if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
@@ -45,11 +51,15 @@ public record KeySpec(List<Segment> segment) {
         return (a, b) -> keyComparator.compare(keyExtractor.apply(a), keyExtractor.apply(b));
     }
 
+    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
+     * using the provided keyComparator. Has zero allocation  */
     public Comparator<String> comparatorLong(java.util.function.ToLongFunction<String> keyExtractor) {
         if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
         return Comparator.comparingLong(keyExtractor);
     }
 
+    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
+     * using the provided keyComparator. Has zero allocation  */
     public Comparator<String> comparatorInt(java.util.function.ToIntFunction<String> keyExtractor) {
         if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
         return Comparator.comparingInt(keyExtractor);

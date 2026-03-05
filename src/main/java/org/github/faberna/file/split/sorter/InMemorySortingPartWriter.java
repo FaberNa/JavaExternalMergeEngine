@@ -67,8 +67,7 @@ public final class InMemorySortingPartWriter implements PartWriter {
         Objects.requireNonNull(partFile, "partFile is required");
 
 
-
-            Comparator<String> primary = keySpec.comparator();
+            Comparator<String> primary = keyComparator;
 
             Comparator<String> totalOrder = (a, b) -> {
                 int c = primary.compare(a, b);

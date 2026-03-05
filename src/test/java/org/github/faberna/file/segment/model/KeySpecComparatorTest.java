@@ -141,6 +141,20 @@ class KeySpecComparatorTest {
     }
 
     @Test
+    void comparator_shouldUseDelimitedSegmentOnLast_lexicographic_onFirstField() {
+        // key = first field before ';' (as string)
+        Segment seg = Segment.afterDelimiter(';', 0, null); // try with String args
+
+        //delimitedSegment(';', 0); // preferred args (if your constructor matches)
+        KeySpec spec = KeySpec.of(seg);
+        Comparator<String> cmp = spec.comparator();
+
+        // lexicographic: "10" < "2" because '1' < '2'
+        assertTrue(cmp.compare("foo;2ed;34", "bar;7ed;34") < 0);
+        assertEquals(0, cmp.compare("foo;0070;abc", "bar;0070;123"));
+    }
+
+    @Test
     void comparator_shouldCombineRange_thenDelimited_asSecondaryKey() {
         // Primary: first 4 chars
         // Secondary: second CSV field (index 1) - lexicographic

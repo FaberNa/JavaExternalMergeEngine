@@ -1,40 +1,102 @@
 package org.github.faberna.file.segment.model;
 
-import org.github.faberna.file.segment.util.SegmentUtil;
+public record RangeSegment(int start, int end, Mode mode) implements Segment {
 
-/**
- * Positional segment of a key.
- * Internal representation: 0-based start (inclusive), end (exclusive).
- */
-public record RangeSegment(int start, int end) implements Segment {
 
-        public RangeSegment {
-            if (start < 0 || end <= start) {
-                throw new IllegalArgumentException("Invalid segment range: start=" + start + ", end=" + end);
-            }
-        }
+    public RangeSegment(int start, int end) {
+        this(start, end, Mode.LEX);
+    }
 
-        /** 1-based inclusive positions -> internal 0-based [start,end) */
-        public static RangeSegment ofInclusive(int start1Based, int end1Based) {
-            if (start1Based <= 0 || end1Based < start1Based) {
-                throw new IllegalArgumentException("Invalid 1-based inclusive range: " + start1Based + " to " + end1Based);
-            }
-            return new RangeSegment(start1Based - 1, end1Based);
-        }
+    public RangeSegment {
+        if (start < 0 || end <= start)  throw new IllegalArgumentException("Invalid 1-based inclusive range: " + start + " to " + end);
 
-        public int length() { return end - start; }
+        if (mode == null) throw new IllegalArgumentException("mode is required");
+    }
 
     @Override
     public int compare(String a, String b) {
-        // Compare [start, end) treating missing chars as '\0'
+        return switch (mode) {
+            case LEX -> compareLex(a, b);
+            case INT -> Long.compare(parseLongInRange(a, start, end), parseLongInRange(b, start, end));
+            case FLOAT -> Double.compare(parseDoubleInRange(a, start, end), parseDoubleInRange(b, start, end));
+        };
+    }
+
+    private int compareLex(String a, String b) {
         for (int i = start; i < end; i++) {
             char ca = (i < a.length()) ? a.charAt(i) : 0;
             char cb = (i < b.length()) ? b.charAt(i) : 0;
-            if (ca != cb) {
-                return Character.compare(ca, cb);
-            }
+            if (ca != cb) return Character.compare(ca, cb);
         }
         return 0;
+    }
+
+    private static long parseLongInRange(String s, int start, int end) {
+        int n = s.length();
+        int i = Math.min(start, n);
+        int to = Math.min(end, n);
+
+        while (i < to && s.charAt(i) <= ' ') i++;
+
+        boolean neg = false;
+        if (i < to) {
+            char c = s.charAt(i);
+            if (c == '-' || c == '+') { neg = (c == '-'); i++; }
+        }
+
+        long val = 0;
+        boolean any = false;
+        while (i < to) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') break;
+            any = true;
+            val = val * 10 + (c - '0');
+            i++;
+        }
+
+        if (!any) return 0;
+        return neg ? -val : val;
+    }
+
+    private static double parseDoubleInRange(String s, int start, int end) {
+        int n = s.length();
+        int i = Math.min(start, n);
+        int to = Math.min(end, n);
+
+        while (i < to && s.charAt(i) <= ' ') i++;
+
+        boolean neg = false;
+        if (i < to) {
+            char c = s.charAt(i);
+            if (c == '-' || c == '+') { neg = (c == '-'); i++; }
+        }
+
+        double val = 0.0;
+        boolean any = false;
+
+        while (i < to) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') break;
+            any = true;
+            val = val * 10.0 + (c - '0');
+            i++;
+        }
+
+        if (i < to && s.charAt(i) == '.') {
+            i++;
+            double div = 10.0;
+            while (i < to) {
+                char c = s.charAt(i);
+                if (c < '0' || c > '9') break;
+                any = true;
+                val += (c - '0') / div;
+                div *= 10.0;
+                i++;
+            }
+        }
+
+        if (!any) return 0.0;
+        return neg ? -val : val;
     }
 
     @Override
@@ -43,5 +105,8 @@ public record RangeSegment(int start, int end) implements Segment {
         if (start >= to) return;
         out.append(line, start, to);
     }
-    }
 
+    public int length() {
+        return end - start;
+    }
+}

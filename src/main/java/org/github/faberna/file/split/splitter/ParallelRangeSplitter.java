@@ -1,6 +1,5 @@
 package org.github.faberna.file.split.splitter;
 
-import org.github.faberna.file.split.SplitEngine;
 import org.github.faberna.file.split.config.IOConfig;
 import org.github.faberna.file.split.plan.SplitPlan;
 import org.github.faberna.file.split.model.LineEnding;

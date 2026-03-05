@@ -4,6 +4,7 @@ import org.github.faberna.file.split.model.LineEnding;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Comparator;
 
 /**
  * Receives parsed lines and writes a part file.

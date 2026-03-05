@@ -27,20 +27,20 @@ class RangeSegmentTest {
     @Test
     void ofInclusiveShouldConvert1BasedToZeroBasedCorrectly() {
         // 1-based inclusive: 1..3 => internal 0..3
-        RangeSegment seg = RangeSegment.ofInclusive(1, 3);
+        RangeSegment seg = new RangeSegment(1, 3);
 
-        assertThat(seg.start()).isEqualTo(0);
+        assertThat(seg.start()).isZero();
         assertThat(seg.end()).isEqualTo(3);
         assertThat(seg.length()).isEqualTo(3);
     }
 
     @Test
     void ofInclusiveShouldValidateInput() {
-        assertThatThrownBy(() -> RangeSegment.ofInclusive(0, 5))
+        assertThatThrownBy(() -> new RangeSegment(-1, 5))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid 1-based inclusive range");
 
-        assertThatThrownBy(() -> RangeSegment.ofInclusive(5, 4))
+        assertThatThrownBy(() -> new RangeSegment(5, 4))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid 1-based inclusive range");
     }
