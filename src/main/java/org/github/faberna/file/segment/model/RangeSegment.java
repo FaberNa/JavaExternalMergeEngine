@@ -1,6 +1,6 @@
 package org.github.faberna.file.segment.model;
 
-public record RangeSegment(int start, int end, Mode mode) implements Segment {
+public record RangeSegment(int start, int end, Mode mode)implements Segment<String> {
 
 
     public RangeSegment(int start, int end) {
@@ -8,7 +8,7 @@ public record RangeSegment(int start, int end, Mode mode) implements Segment {
     }
 
     public RangeSegment {
-        if (start < 0 || end <= start)  throw new IllegalArgumentException("Invalid 1-based inclusive range: " + start + " to " + end);
+        if (start < 0 || end <= start)  throw new IllegalArgumentException("Invalid inclusive range: " + start + " to " + end);
 
         if (mode == null) throw new IllegalArgumentException("mode is required");
     }

@@ -12,22 +12,22 @@ class RangeSegmentTest {
         // start < 0
         assertThatThrownBy(() -> Segment.range(-1, 5))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid segment range");
+                .hasMessageContaining("Invalid inclusive range: -1 to 5");
 
         // end <= start
         assertThatThrownBy(() -> Segment.range(5, 5))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid segment range");
+                .hasMessageContaining("Invalid inclusive range: 5 to 5");
 
         assertThatThrownBy(() -> Segment.range(10, 5))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid segment range");
+                .hasMessageContaining("Invalid inclusive range: 10 to 5");
     }
 
     @Test
     void ofInclusiveShouldConvert1BasedToZeroBasedCorrectly() {
         // 1-based inclusive: 1..3 => internal 0..3
-        RangeSegment seg = new RangeSegment(1, 3);
+        RangeSegment seg = new RangeSegment(0, 3);
 
         assertThat(seg.start()).isZero();
         assertThat(seg.end()).isEqualTo(3);
@@ -38,11 +38,11 @@ class RangeSegmentTest {
     void ofInclusiveShouldValidateInput() {
         assertThatThrownBy(() -> new RangeSegment(-1, 5))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid 1-based inclusive range");
+                .hasMessageContaining("Invalid inclusive range: -1 to 5");
 
         assertThatThrownBy(() -> new RangeSegment(5, 4))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Invalid 1-based inclusive range");
+                .hasMessageContaining("Invalid inclusive range: 5 to 4");
     }
 
     @Test

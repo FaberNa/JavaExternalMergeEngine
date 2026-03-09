@@ -1,6 +1,7 @@
 package org.github.faberna.file.segment;
 
 import org.github.faberna.file.segment.model.DelimitedSegment;
+import org.github.faberna.file.segment.model.Mode;
 import org.github.faberna.file.segment.model.Segment;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,7 +61,7 @@ class DelimitedSegmentTest {
         var seg0 = new DelimitedSegment('|', 0, 3);
         var sb0 = new StringBuilder();
         seg0.appendKey("ABC|123|HELLO|999", sb0);
-        assertThat(sb0.toString()).isEqualTo("123");
+        assertThat(sb0.toString()).hasToString("123");
 
         // after 2nd '|' (occurrence 1) take 3 => "HEL"
         var seg1 = new DelimitedSegment('|', 1, 3);
@@ -138,10 +139,10 @@ class DelimitedSegmentTest {
 
     @Test
     void shouldWorkAlsoThroughFactory_ifYouUseSegmentAfterDelimiterFactory() {
-        Segment seg = Segment.afterDelimiter('|', 1, 3);
+        Segment<String> seg = new DelimitedSegment('|', 1, 3, Mode.LEX);
         var sb = new StringBuilder();
         seg.appendKey("ABC|123|HELLO|999", sb);
-        assertThat(sb.toString()).isEqualTo("HEL");
+        assertThat(sb.toString()).hasToString("HEL");
     }
 
     @ParameterizedTest(name = "extract lengthAfter=null from \"{0}\" => \"{1}\"")

@@ -1,31 +1,45 @@
 package org.github.faberna.file.segment.model;
 
-public sealed interface Segment permits RangeSegment, DelimitedSegment {
+public  interface Segment<T> {
 
-    int compare(String a, String b);
-    void appendKey(String line, StringBuilder out);
+    /**
+     *  Compare the key segments of a and b, returning a negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second.
+     * @param a first line to compare
+     * @param b second line to compare
+     * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or greater than the second
+     */
+    int compare(T a, T b);
 
-    static Segment range(int startInclusive, int endExclusive) {
+    /**
+     * Append the key segment of the line to the output StringBuilder.
+     * Method used to build the output it's used only for debug purposes, as it allocates a new String for the key segment.
+     * For actual merging and comparison, the compare method is used, which does not allocate.
+     * @param value the line to extract the key segment from
+     * @param out the StringBuilder to append the key segment to
+     */
+    void appendKey(T value, StringBuilder out);
+
+    static Segment<String> range(int startInclusive, int endExclusive) {
         return new RangeSegment(startInclusive, endExclusive, Mode.LEX);
     }
 
-    static Segment rangeInt(int startInclusive, int endExclusive) {
+    static Segment<String> rangeInt(int startInclusive, int endExclusive) {
         return new RangeSegment(startInclusive, endExclusive, Mode.INT);
     }
 
-    static Segment rangeFloat(int startInclusive, int endExclusive) {
+    static Segment<String> rangeFloat(int startInclusive, int endExclusive) {
         return new RangeSegment(startInclusive, endExclusive, Mode.FLOAT);
     }
 
-    static Segment afterDelimiter(char delimiter, int occurrenceIndex, Integer lengthAfter) {
+    static Segment<String> afterDelimiter(char delimiter, int occurrenceIndex, Integer lengthAfter) {
         return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.LEX);
     }
 
-    static Segment afterDelimiterInt(char delimiter, int occurrenceIndex, Integer lengthAfter) {
+    static Segment<String> afterDelimiterInt(char delimiter, int occurrenceIndex, Integer lengthAfter) {
         return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.INT);
     }
 
-    static Segment afterDelimiterFloat(char delimiter, int occurrenceIndex, Integer lengthAfter) {
+    static Segment<String> afterDelimiterFloat(char delimiter, int occurrenceIndex, Integer lengthAfter) {
         return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.FLOAT);
     }
 }

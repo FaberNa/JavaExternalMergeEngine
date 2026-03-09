@@ -27,7 +27,7 @@ public final class MergeEngine {
 
 
     /**
-     * K-way merge using KeySpec ordering and the exact record separator used in the chunk files.
+     * K-way merge using KeySpec ordering and the exact record separator used in the chunk files. it use comparator from keyspec in lex order
      */
     public static void kWayMerge(
             List<Path> sortedChunks,
@@ -53,7 +53,7 @@ public final class MergeEngine {
     ) throws IOException {
         checkParameters(keySpecComparator, charset, recordSeparator);
         final byte[] bytes = recordSeparator.bytes();
-
+        // list all readers
         List<ChunkRecordReader> readers = new ArrayList<>(sortedChunks.size());
         try {
             for (Path p : sortedChunks) {

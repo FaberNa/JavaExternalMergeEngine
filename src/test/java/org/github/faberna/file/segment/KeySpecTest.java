@@ -1,6 +1,8 @@
 package org.github.faberna.file.segment;
 
+import org.github.faberna.file.segment.model.DelimitedSegment;
 import org.github.faberna.file.segment.model.KeySpec;
+import org.github.faberna.file.segment.model.Mode;
 import org.github.faberna.file.segment.model.Segment;
 import org.junit.jupiter.api.Test;
 
@@ -169,15 +171,33 @@ class KeySpecTest {
         // line: "a|bbb|cc|dddd"
         // occurrenceIndex=1 => 2° delimiter (0-based)
         // after the 2° '|' there is "cc|dddd" -> first 3 chars => "cc|"
-        var spec = KeySpec.of(Segment.afterDelimiter('|', 1, 3));
+        var spec = KeySpec.of(new DelimitedSegment('|', 1, 3, Mode.LEX));
 
         assertThat(spec.extractKey("a|bbb|cc|dddd")).isEqualTo("cc|");
     }
 
     @Test
+    void compareShouldSupportDelimitedSegmentInIntMode() {
+        DelimitedSegment segment = new DelimitedSegment('|', 0, null, Mode.INT);
+
+        assertThat(segment.compare("A|2|x", "A|10|x")).isLessThan(0);
+        assertThat(segment.compare("A|10|x", "A|2|x")).isGreaterThan(0);
+        assertThat(segment.compare("A|002|x", "A|2|x")).isZero();
+    }
+
+    @Test
+    void compareShouldSupportDelimitedSegmentInFloatMode() {
+        DelimitedSegment segment = new DelimitedSegment('|', 0, null, Mode.FLOAT);
+
+        assertThat(segment.compare("A|2.5|x", "A|10.25|x")).isLessThan(0);
+        assertThat(segment.compare("A|10.25|x", "A|2.5|x")).isGreaterThan(0);
+        assertThat(segment.compare("A|2.50|x", "A|2.5|x")).isZero();
+    }
+
+    @Test
     void defaultComparatorShouldSupportDelimitedSegment() {
         // Compare by first 2 chars after the first delimiter
-        var spec = KeySpec.of(Segment.afterDelimiter('|', 0, 2));
+        var spec = KeySpec.of(new DelimitedSegment('|', 0, 2, Mode.LEX));
         var cmp = spec.comparator();
 
         // "a|ba|x" -> key "ba"
@@ -193,7 +213,7 @@ class KeySpecTest {
         // First compare the first char (range), then 2 chars after the first delimiter
         var spec = KeySpec.of(
                 Segment.range(0, 1),
-                Segment.afterDelimiter('|', 0, 2)
+                new DelimitedSegment('|', 0, 2, Mode.LEX)
         );
 
         var cmp = spec.comparator();

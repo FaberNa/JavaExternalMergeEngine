@@ -2,71 +2,14 @@ package org.github.faberna.file.segment.model;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
 import java.util.Comparator;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class KeySpecComparatorTest {
 
-    // ---------- helpers to instantiate DelimitedSegment without guessing its constructor ----------
-    private static Segment delimitedSegment(Object... preferredArgs) {
-        try {
-            Class<?> cls = Class.forName("org.github.faberna.file.segment.model.DelimitedSegment");
 
-            // 1) Try exact args types first
-            for (Constructor<?> c : cls.getDeclaredConstructors()) {
-                Class<?>[] pt = c.getParameterTypes();
-                if (pt.length != preferredArgs.length) continue;
-                if (isCompatible(pt, preferredArgs)) {
-                    c.setAccessible(true);
-                    return (Segment) c.newInstance(preferredArgs);
-                }
-            }
 
-            // 2) Try some common fallbacks (you can extend if needed)
-            List<Object[]> fallbacks = List.of(
-                    new Object[]{';', 0},
-                    new Object[]{';', 1},
-                    new Object[]{";", 0},
-                    new Object[]{";", 1},
-                    new Object[]{';'},
-                    new Object[]{";"}
-            );
-
-            for (Object[] fb : fallbacks) {
-                for (Constructor<?> c : cls.getDeclaredConstructors()) {
-                    Class<?>[] pt = c.getParameterTypes();
-                    if (pt.length != fb.length) continue;
-                    if (isCompatible(pt, fb)) {
-                        c.setAccessible(true);
-                        return (Segment) c.newInstance(fb);
-                    }
-                }
-            }
-
-            fail("Could not instantiate DelimitedSegment via reflection. Please paste DelimitedSegment.java signature.");
-            return null;
-
-        } catch (ClassNotFoundException e) {
-            fail("DelimitedSegment class not found in package org.github.faberna.file.segment.model");
-            return null;
-        } catch (Exception e) {
-            fail("Failed to instantiate DelimitedSegment via reflection: " + e);
-            return null;
-        }
-    }
-
-    private static boolean isCompatible(Class<?>[] paramTypes, Object[] args) {
-        for (int i = 0; i < paramTypes.length; i++) {
-            if (args[i] == null) return false;
-            Class<?> pt = wrap(paramTypes[i]);
-            Class<?> at = wrap(args[i].getClass());
-            if (!pt.isAssignableFrom(at)) return false;
-        }
-        return true;
-    }
 
     private static Class<?> wrap(Class<?> c) {
         if (!c.isPrimitive()) return c;
@@ -129,7 +72,7 @@ class KeySpecComparatorTest {
     @Test
     void comparator_shouldUseDelimitedSegment_lexicographic_onFirstField() {
         // key = first field before ';' (as string)
-        Segment seg = Segment.afterDelimiter(';', 0, null); // try with String args
+        Segment<String> seg = new DelimitedSegment(';', 0, null,Mode.LEX); // try with String args
 
                 //delimitedSegment(';', 0); // preferred args (if your constructor matches)
         KeySpec spec = KeySpec.of(seg);
@@ -143,7 +86,7 @@ class KeySpecComparatorTest {
     @Test
     void comparator_shouldUseDelimitedSegmentOnLast_lexicographic_onFirstField() {
         // key = first field before ';' (as string)
-        Segment seg = Segment.afterDelimiter(';', 0, null); // try with String args
+        Segment<String> seg = new DelimitedSegment(';', 0, null,Mode.LEX); // try with String args
 
         //delimitedSegment(';', 0); // preferred args (if your constructor matches)
         KeySpec spec = KeySpec.of(seg);
@@ -158,8 +101,8 @@ class KeySpecComparatorTest {
     void comparator_shouldCombineRange_thenDelimited_asSecondaryKey() {
         // Primary: first 4 chars
         // Secondary: second CSV field (index 1) - lexicographic
-        Segment primary = new RangeSegment(0, 4);
-        Segment secondary = Segment.afterDelimiter(';', 1,null);
+        Segment<String> primary = new RangeSegment(0, 4);
+        Segment<String> secondary = new DelimitedSegment(';', 1,null,Mode.LEX);
 
         KeySpec spec = KeySpec.of(primary, secondary);
         Comparator<String> cmp = spec.comparator();
@@ -215,11 +158,17 @@ class KeySpecComparatorTest {
     }
 
     @Test
-    void comparatorFromLine_shouldThrowOnNulls() {
+    void comparatorFromLine_whenKeyIsNull_shouldThrowOnNulls() {
         KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
 
         assertThrows(IllegalArgumentException.class,
                 () -> spec.comparatorFromLine(null, Comparator.naturalOrder()));
+
+    }
+    @Test
+    void comparatorFromLine_whenComparatorIsNull_shouldThrowOnNulls() {
+        KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
+
 
         assertThrows(IllegalArgumentException.class,
                 () -> spec.comparatorFromLine(s -> s, null));

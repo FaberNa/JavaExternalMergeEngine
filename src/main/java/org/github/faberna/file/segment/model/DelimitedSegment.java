@@ -2,7 +2,7 @@ package org.github.faberna.file.segment.model;
 
 import org.github.faberna.file.segment.util.SegmentUtil;
 
-public record DelimitedSegment(char delimiter, int occurrenceIndex, Integer lengthAfter, Mode mode) implements Segment {
+public record DelimitedSegment(char delimiter, int occurrenceIndex, Integer lengthAfter, Mode mode) implements Segment<String> {
 
 
     public DelimitedSegment(char delimiter, int occurrenceIndex, Integer lengthAfter) {
@@ -19,7 +19,12 @@ public record DelimitedSegment(char delimiter, int occurrenceIndex, Integer leng
     public int compare(String a, String b) {
         Range ra = resolve(a);
         Range rb = resolve(b);
-
+    /*
+     *  Comparison logic:
+     *  - LEX: compare character by character in the resolved ranges, treating missing chars
+     *  - INT: parse the resolved ranges as  integers and compare numerically
+     *  - FLOAT: parse the resolved ranges as floating-point numbers and compare numerically
+     */
         return switch (mode) {
             case LEX -> SegmentUtil.compareRangesCharByChar(a, ra.start, ra.end, b, rb.start, rb.end);
             case INT -> Long.compare(parseLongInRange(a, ra.start, ra.end), parseLongInRange(b, rb.start, rb.end));
@@ -27,11 +32,13 @@ public record DelimitedSegment(char delimiter, int occurrenceIndex, Integer leng
         };
     }
 
+
     @Override
     public void appendKey(String line, StringBuilder out) {
         Range r = resolve(line);
         SegmentUtil.appendRange(line, r.start, r.end, out);
     }
+
 
     private Range resolve(String line) {
         int delimPos = SegmentUtil.nthDelimiterIndex(line, delimiter, occurrenceIndex);
