@@ -314,7 +314,7 @@ class SplitEngineTest {
         Path outputDir = tempDir;
         //Path outputDir = Path.of("src/test/resources/output");;
 
-        Segment segment = new RangeSegment(0,10);
+        Segment<String> segment = new RangeSegment(0,10);
         KeySpec keySpec = new KeySpec(List.of(segment)); // sort by first 10 chars of each line
 
         SortedSplitEngine engine = new SortedSplitEngine(new SplitEngine(), keySpec, keySpec.comparator());
@@ -458,6 +458,8 @@ class SplitEngineTest {
         verify(planner, times(1)).planByMaxBytes(input, outDir, 1024L, sep);
         verify(parallel, times(1)).execute(plan, io);
     }
+
+
 
     private static void inject(Object target, String fieldName, Object value) {
         try {
