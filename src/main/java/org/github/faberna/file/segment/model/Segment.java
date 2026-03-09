@@ -23,23 +23,4 @@ public  interface Segment<T> {
         return new RangeSegment(startInclusive, endExclusive, Mode.LEX);
     }
 
-    static Segment<String> rangeInt(int startInclusive, int endExclusive) {
-        return new RangeSegment(startInclusive, endExclusive, Mode.INT);
-    }
-
-    static Segment<String> rangeFloat(int startInclusive, int endExclusive) {
-        return new RangeSegment(startInclusive, endExclusive, Mode.FLOAT);
-    }
-
-    static Segment<String> afterDelimiter(char delimiter, int occurrenceIndex, Integer lengthAfter) {
-        return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.LEX);
-    }
-
-    static Segment<String> afterDelimiterInt(char delimiter, int occurrenceIndex, Integer lengthAfter) {
-        return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.INT);
-    }
-
-    static Segment<String> afterDelimiterFloat(char delimiter, int occurrenceIndex, Integer lengthAfter) {
-        return new DelimitedSegment(delimiter, occurrenceIndex, lengthAfter, Mode.FLOAT);
-    }
 }

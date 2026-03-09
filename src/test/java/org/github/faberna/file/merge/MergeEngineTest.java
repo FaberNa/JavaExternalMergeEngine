@@ -1,6 +1,8 @@
 package org.github.faberna.file.merge;
 
 import org.github.faberna.file.segment.model.KeySpec;
+import org.github.faberna.file.segment.model.Mode;
+import org.github.faberna.file.segment.model.RangeSegment;
 import org.github.faberna.file.segment.model.Segment;
 import org.github.faberna.file.split.model.Separator;
 import org.github.faberna.file.split.model.SingleByteSeparator;
@@ -57,7 +59,7 @@ class MergeEngineTest {
         Files.writeString(c1, "aaaa\ncccc\n");
         Files.writeString(c2, "bbbb\ndddd\n");
 
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of(new RangeSegment(0, 4, Mode.LEX));
         MergeEngine.kWayMerge(List.of(c1, c2), out, keySpec, StandardCharsets.UTF_8, new SingleByteSeparator((byte) '\n', 8 * 1024));
 
         String outText = Files.readString(out, StandardCharsets.UTF_8);
@@ -120,7 +122,7 @@ class MergeEngineTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("separators")
     void kWayMerge_shouldMergeUsingKeySpec_parametrized(String name, Separator sep, byte expectedLastByte) throws IOException {
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of( new RangeSegment(0, 4, Mode.LEX));
 
         Path c1 = tmp.resolve("p1-" + name + ".txt");
         Path c2 = tmp.resolve("p2-" + name + ".txt");

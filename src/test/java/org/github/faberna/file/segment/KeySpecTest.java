@@ -1,9 +1,6 @@
 package org.github.faberna.file.segment;
 
-import org.github.faberna.file.segment.model.DelimitedSegment;
-import org.github.faberna.file.segment.model.KeySpec;
-import org.github.faberna.file.segment.model.Mode;
-import org.github.faberna.file.segment.model.Segment;
+import org.github.faberna.file.segment.model.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -29,7 +26,7 @@ class KeySpecTest {
     @Test
     void constructorShouldDefensivelyCopyList() {
         var original = new ArrayList<Segment>();
-        original.add(Segment.range(0, 3));
+        original.add(new RangeSegment(0,3));
 
         var spec = new KeySpec(original);
 

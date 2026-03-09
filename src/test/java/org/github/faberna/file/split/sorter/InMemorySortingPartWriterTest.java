@@ -1,6 +1,7 @@
 package org.github.faberna.file.split.sorter;
 
 import org.github.faberna.file.segment.model.KeySpec;
+import org.github.faberna.file.segment.model.RangeSegment;
 import org.github.faberna.file.segment.model.Segment;
 import org.github.faberna.file.split.model.LineEnding;
 import org.junit.jupiter.api.Test;
@@ -32,9 +33,8 @@ class InMemorySortingPartWriterTest {
         // return new KeySpec(List.of(new PositionalSegment(0, Integer.MAX_VALUE)));
 
         // ESEMPIO B (se hai factory):
-         return KeySpec.of(Segment.range(0, Integer.MAX_VALUE));
+         return KeySpec.of(new RangeSegment(0,Integer.MAX_VALUE));
 
-        //throw new UnsupportedOperationException("Implement keySpecWholeLine() using your real KeySpec/Segment API");
     }
 
     @Test

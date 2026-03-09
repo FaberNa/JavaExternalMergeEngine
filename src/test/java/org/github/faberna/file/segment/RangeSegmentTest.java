@@ -53,7 +53,7 @@ class RangeSegmentTest {
 
     @Test
     void compareShouldWorkCharByChar() {
-        Segment seg = Segment.range(0, 3);
+        Segment<String> seg = Segment.range(0, 3);
 
         // Compare first 3 characters
         assertThat(seg.compare("ABCDEF", "ABDXYZ"))
@@ -85,32 +85,32 @@ class RangeSegmentTest {
 
     @Test
     void appendKeyShouldAppendCorrectRange() {
-        Segment seg = Segment.range(1, 4);
+        Segment<String> seg = Segment.range(1, 4);
 
         StringBuilder sb = new StringBuilder();
         seg.appendKey("ABCDE", sb);
 
-        assertThat(sb.toString()).isEqualTo("BCD");
+        assertThat(sb.toString()).hasToString("BCD");
     }
 
     @Test
     void appendKeyShouldHandleShortLineGracefully() {
-        Segment seg = Segment.range(2,6);
+        Segment<String> seg = Segment.range(2,6);
 
         StringBuilder sb = new StringBuilder();
         seg.appendKey("ABC", sb);  // only index 2 exists
 
-        assertThat(sb.toString()).isEqualTo("C");
+        assertThat(sb.toString()).hasToString("C");
     }
 
     @Test
     void recordBasicsShouldWork() {
-        Segment a = Segment.range(0, 5);
-        Segment b = Segment.range(0, 5);
-        Segment c = Segment.range(1, 5);
+        Segment<String> a = Segment.range(0, 5);
+        Segment<String> b = Segment.range(0, 5);
+        Segment<String> c = Segment.range(1, 5);
 
         assertThat(a).isEqualTo(b);
-        assertThat(a.hashCode()).isEqualTo(b.hashCode());
+        assertThat(a.hashCode()).hasSameHashCodeAs(b.hashCode());
         assertThat(a).isNotEqualTo(c);
 
         assertThat(a.toString())
