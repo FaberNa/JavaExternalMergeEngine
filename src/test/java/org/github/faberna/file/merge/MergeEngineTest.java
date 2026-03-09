@@ -149,7 +149,7 @@ class MergeEngineTest {
     @Test
     void kWayMerge_shouldHandleEmptyChunks_gracefully() throws IOException {
         Separator sep = new SingleByteSeparator((byte) '\n', 8 * 1024);
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of(new RangeSegment(0, 4));
 
         Path empty = tmp.resolve("empty.txt");
         Files.write(empty, new byte[0]);
@@ -169,7 +169,7 @@ class MergeEngineTest {
     @Test
     void kWayMerge_shouldMergeSingleChunk_asIs() throws IOException {
         Separator sep = new SingleByteSeparator((byte) '\n', 8 * 1024);
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of(new RangeSegment(0, 4));
 
         Path c1 = tmp.resolve("single.txt");
         writeChunk(c1, sep, "0001;A", "0002;B", "0003;C");
@@ -184,7 +184,7 @@ class MergeEngineTest {
     void kWayMerge_shouldOutputLastRecordEvenIfChunkMissingTrailingSeparator() throws IOException {
         // This validates that the reader emits the final record at EOF.
         Separator sep = new SingleByteSeparator((byte) '\n', 8 * 1024);
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of(new RangeSegment(0, 4));
 
         Path c1 = tmp.resolve("no-trailing-sep.txt");
         // last record does NOT have separator
@@ -208,7 +208,7 @@ class MergeEngineTest {
     void kWayMerge_shouldBeStableWhenKeysAreEqual_byUsingSeqTieBreaker() throws IOException {
         // keySpec compares only first 4 chars (the key). All keys below are equal.
         Separator sep = new SingleByteSeparator((byte) '\n', 8 * 1024);
-        KeySpec keySpec = KeySpec.of(Segment.range(0, 4));
+        KeySpec keySpec = KeySpec.of(new RangeSegment(0, 4));
 
         Path c1 = tmp.resolve("stable-1.txt");
         Path c2 = tmp.resolve("stable-2.txt");

@@ -10,16 +10,16 @@ class RangeSegmentTest {
     @Test
     void shouldValidateConstructorArguments() {
         // start < 0
-        assertThatThrownBy(() -> Segment.range(-1, 5))
+        assertThatThrownBy(() -> new RangeSegment(-1, 5))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid inclusive range: -1 to 5");
 
         // end <= start
-        assertThatThrownBy(() -> Segment.range(5, 5))
+        assertThatThrownBy(() -> new RangeSegment(5, 5))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid inclusive range: 5 to 5");
 
-        assertThatThrownBy(() -> Segment.range(10, 5))
+        assertThatThrownBy(() -> new RangeSegment(10, 5))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid inclusive range: 10 to 5");
     }
@@ -47,13 +47,13 @@ class RangeSegmentTest {
 
     @Test
     void lengthShouldReturnCorrectSize() {
-        RangeSegment seg = (RangeSegment) Segment.range(2, 7);
+        RangeSegment seg =  new RangeSegment(2, 7);
         assertThat(seg.length()).isEqualTo(5);
     }
 
     @Test
     void compareShouldWorkCharByChar() {
-        Segment<String> seg = Segment.range(0, 3);
+        Segment<String> seg = new RangeSegment(0, 3);
 
         // Compare first 3 characters
         assertThat(seg.compare("ABCDEF", "ABDXYZ"))
@@ -85,7 +85,7 @@ class RangeSegmentTest {
 
     @Test
     void appendKeyShouldAppendCorrectRange() {
-        Segment<String> seg = Segment.range(1, 4);
+        Segment<String> seg = new RangeSegment(1, 4);
 
         StringBuilder sb = new StringBuilder();
         seg.appendKey("ABCDE", sb);
@@ -95,7 +95,7 @@ class RangeSegmentTest {
 
     @Test
     void appendKeyShouldHandleShortLineGracefully() {
-        Segment<String> seg = Segment.range(2,6);
+        Segment<String> seg = new RangeSegment(2,6);
 
         StringBuilder sb = new StringBuilder();
         seg.appendKey("ABC", sb);  // only index 2 exists
@@ -105,9 +105,9 @@ class RangeSegmentTest {
 
     @Test
     void recordBasicsShouldWork() {
-        Segment<String> a = Segment.range(0, 5);
-        Segment<String> b = Segment.range(0, 5);
-        Segment<String> c = Segment.range(1, 5);
+        Segment<String> a = new RangeSegment(0, 5);
+        Segment<String> b = new RangeSegment(0, 5);
+        Segment<String> c = new RangeSegment(1, 5);
 
         assertThat(a).isEqualTo(b);
         assertThat(a.hashCode()).hasSameHashCodeAs(b.hashCode());

@@ -19,8 +19,6 @@ public  interface Segment<T> {
      */
     void appendKey(T value, StringBuilder out);
 
-    static Segment<String> range(int startInclusive, int endExclusive) {
-        return new RangeSegment(startInclusive, endExclusive, Mode.LEX);
-    }
+
 
 }

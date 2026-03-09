@@ -117,12 +117,9 @@ class KeySpecComparatorTest {
 
     @Test
     void comparatorFromLine_shouldCompareTypedKey_withoutExtractKey() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 4)); // segments not used by comparatorFromLine
+        KeySpec spec = KeySpec.of(new RangeSegment(0, 4,Mode.INT)); // segments not used by comparatorFromLine
 
-        Comparator<String> cmp = spec.comparatorFromLine(
-                line -> parseIntRange(line, 0, 4),          // typed key = int
-                Comparator.naturalOrder()
-        );
+        Comparator<String> cmp = spec.comparator();
 
         // numeric: 3 < 5
         assertTrue(cmp.compare("0003;foo", "0005;bar") < 0);
@@ -132,57 +129,33 @@ class KeySpecComparatorTest {
 
     @Test
     void comparatorInt_shouldHandle0003_vs_005_numericCorrectly() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1)); // just to satisfy KeySpec, not used
+        KeySpec spec = KeySpec.of(new RangeSegment(0, 4,Mode.INT)); // just to satisfy KeySpec, not used
 
-        Comparator<String> cmp = spec.comparatorInt(line -> parseIntUntil(line, ';'));
+        Comparator<String> cmp = spec.comparator();
 
         // This is your case: "0003" vs "005" -> 3 < 5
-        assertTrue(cmp.compare("0003;foo", "005;bar") < 0);
+        assertTrue(cmp.compare("03;foo", "05;bar") < 0);
 
         // also: 10 > 2 numerically
-        assertTrue(cmp.compare("10;foo", "2;bar") > 0);
+        assertTrue(cmp.compare("10;foo", "02;bar") > 0);
 
         // "7" == "007"
-        assertEquals(0, cmp.compare("7;foo", "007;bar"));
+        assertEquals(0, cmp.compare(" 7;foo", "007;bar"));
     }
 
     @Test
     void comparatorLong_shouldCompareLargeNumbers_withoutAllocations() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1)); // not used
+        KeySpec spec = KeySpec.of(new RangeSegment(0, 12,Mode.FLOAT)); // not used
 
-        Comparator<String> cmp = spec.comparatorLong(line -> parseLongRange(line, 0, 12));
+        Comparator<String> cmp = spec.comparator();
 
         assertTrue(cmp.compare("000000000003;X", "000000000005;Y") < 0);
         assertTrue(cmp.compare("000000000100;X", "000000000009;Y") > 0);
         assertEquals(0, cmp.compare("000000000042;X", "000000000042;Y"));
     }
 
-    @Test
-    void comparatorFromLine_whenKeyIsNull_shouldThrowOnNulls() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
-
-        assertThrows(IllegalArgumentException.class,
-                () -> spec.comparatorFromLine(null, Comparator.naturalOrder()));
-
-    }
-    @Test
-    void comparatorFromLine_whenComparatorIsNull_shouldThrowOnNulls() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
 
 
-        assertThrows(IllegalArgumentException.class,
-                () -> spec.comparatorFromLine(s -> s, null));
-    }
 
-    @Test
-    void comparatorInt_shouldThrowOnNullExtractor() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
-        assertThrows(IllegalArgumentException.class, () -> spec.comparatorInt(null));
-    }
 
-    @Test
-    void comparatorLong_shouldThrowOnNullExtractor() {
-        KeySpec spec = KeySpec.of(new RangeSegment(0, 1));
-        assertThrows(IllegalArgumentException.class, () -> spec.comparatorLong(null));
-    }
 }

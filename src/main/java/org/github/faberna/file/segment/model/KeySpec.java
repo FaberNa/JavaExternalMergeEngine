@@ -1,5 +1,7 @@
 package org.github.faberna.file.segment.model;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import java.util.Comparator;
 import java.util.List;
 
@@ -7,7 +9,7 @@ import java.util.List;
  * Each segment is a substring of the line, defined by an offset and length.
  * The key is the concatenation of all segments.
  */
-public record KeySpec(List<Segment> segment) {
+public record KeySpec<T>(List<Segment<T>> segment) {
 
     public KeySpec {
         if (segment == null || segment.isEmpty()) {
@@ -21,52 +23,24 @@ public record KeySpec(List<Segment> segment) {
     }
 
     /** Default zero-allocation comparator (delegates to segments). */
-    public Comparator<String> comparator() {
+    public Comparator<T> comparator() {
         return this::compareBySegments;
     }
 
+
+
     /**
-     * Materializes the key via {@link #extractKey(String)} (allocates),
+     * Materializes the key via {@link #extractKey(T)} (allocates),
      * then compares using the provided comparator.
      */
-    public Comparator<String> comparator(Comparator<String> keyComparator) {
+    public Comparator<T> comparator(Comparator<String> keyComparator) {
         if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
         return (a, b) -> keyComparator.compare(extractKey(a), extractKey(b));
     }
 
-    public <K> Comparator<String> comparator(java.util.function.Function<String, K> keyMapper,
-                                             Comparator<? super K> keyComparator) {
-        if (keyMapper == null) throw new IllegalArgumentException("keyMapper is required");
-        if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
-        return (a, b) -> keyComparator.compare(keyMapper.apply(extractKey(a)),
-                keyMapper.apply(extractKey(b)));
-    }
 
-    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
-     * using the provided keyComparator. Has zero allocation  */
-    public <K> Comparator<String> comparatorFromLine(java.util.function.Function<String, K> keyExtractor,
-                                                     Comparator<? super K> keyComparator) {
-        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
-        if (keyComparator == null) throw new IllegalArgumentException("keyComparator is required");
-        return (a, b) -> keyComparator.compare(keyExtractor.apply(a), keyExtractor.apply(b));
-    }
-
-    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
-     * using the provided keyComparator. Has zero allocation  */
-    public Comparator<String> comparatorLong(java.util.function.ToLongFunction<String> keyExtractor) {
-        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
-        return Comparator.comparingLong(keyExtractor);
-    }
-
-    /** Extracts the key via {@link #extractKey(String)}, then applies the provided keyExtractor and compares
-     * using the provided keyComparator. Has zero allocation  */
-    public Comparator<String> comparatorInt(java.util.function.ToIntFunction<String> keyExtractor) {
-        if (keyExtractor == null) throw new IllegalArgumentException("keyExtractor is required");
-        return Comparator.comparingInt(keyExtractor);
-    }
-
-    private int compareBySegments(String a, String b) {
-        for (Segment seg : segment) {
+    private int compareBySegments(T a, T b) {
+        for (Segment<T> seg : segment) {
             int c = seg.compare(a, b);
             if (c != 0) return c;
         }
@@ -74,9 +48,9 @@ public record KeySpec(List<Segment> segment) {
     }
 
     /** Allocates. Use only for debugging / materialized-key comparators. */
-    public String extractKey(String line) {
+    public String extractKey(T line) {
         StringBuilder sb = new StringBuilder();
-        for (Segment seg : segment) seg.appendKey(line, sb);
+        for (Segment<T> seg : segment) seg.appendKey(line, sb);
         return sb.toString();
     }
 }

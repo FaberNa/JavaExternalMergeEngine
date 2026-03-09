@@ -35,6 +35,7 @@ class SortAndMergeFileTest {
        // Clean up tempDir after each test
        Files.walk(outputDir)
                .filter(Files::isRegularFile)
+               .filter(f-> !f.endsWith(".tmp"))
                .forEach(p -> {
                    try {
                        Files.delete(p);

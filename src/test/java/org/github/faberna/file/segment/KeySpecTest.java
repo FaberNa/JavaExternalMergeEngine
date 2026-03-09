@@ -1,5 +1,6 @@
 package org.github.faberna.file.segment;
 
+import org.apache.poi.ss.formula.functions.T;
 import org.github.faberna.file.segment.model.*;
 import org.junit.jupiter.api.Test;
 
@@ -25,26 +26,26 @@ class KeySpecTest {
 
     @Test
     void constructorShouldDefensivelyCopyList() {
-        var original = new ArrayList<Segment>();
+        var original = new ArrayList<Segment<String>>();
         original.add(new RangeSegment(0,3));
 
-        var spec = new KeySpec(original);
+        var spec = new KeySpec<String>(original);
 
         // mutate original list after creation
-        original.add(Segment.range(3, 5));
+        original.add(new RangeSegment(3, 5));
 
         // KeySpec must not see the new segment (it copied the list)
         assertThat(spec.segment()).hasSize(1);
 
         // and internal list is unmodifiable (List.copyOf)
-        assertThatThrownBy(() -> spec.segment().add(Segment.range(1, 2)))
+        assertThatThrownBy(() -> spec.segment().add(new RangeSegment(1, 2)))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
     void ofFactoryShouldBuildSpecFromVarargs() {
-        var s1 = Segment.range(0, 2);
-        var s2 = Segment.range(3, 5);
+        var s1 = new RangeSegment(0, 2);
+        var s2 = new RangeSegment(3, 5);
 
         var spec = KeySpec.of(s1, s2);
 
@@ -54,8 +55,8 @@ class KeySpecTest {
     @Test
     void extractKeyShouldConcatenateAllSegmentRanges() {
         var spec = KeySpec.of(
-                Segment.range(0, 3),  // "ABC"
-                Segment.range(4, 7)   // "EFG"
+                new RangeSegment(0, 3),  // "ABC"
+                new RangeSegment(4, 7)   // "EFG"
         );
 
         assertThat(spec.extractKey("ABCDEFGH")).isEqualTo("ABCEFG");
@@ -64,8 +65,8 @@ class KeySpecTest {
     @Test
     void extractKeyShouldHandleShortLinesGracefully() {
         var spec = KeySpec.of(
-                Segment.range(0, 5),   // up to 5 chars
-                Segment.range(10, 12)  // start beyond length => ignored
+                new RangeSegment(0, 5),   // up to 5 chars
+                new RangeSegment(10, 12)  // start beyond length => ignored
         );
 
         assertThat(spec.extractKey("ABC")).isEqualTo("ABC");
@@ -75,8 +76,8 @@ class KeySpecTest {
     void defaultComparatorShouldCompareCharByCharAcrossSegments() {
         // Compare first by [0,3), then by [4,7)
         var spec = KeySpec.of(
-                Segment.range(0, 3),
-                Segment.range(4, 7)
+                new RangeSegment(0, 3),
+                new RangeSegment(4, 7)
         );
 
         var cmp = spec.comparator();
@@ -93,7 +94,7 @@ class KeySpecTest {
 
     @Test
     void defaultComparatorShouldHandleDifferentStringLengths() {
-        var spec = KeySpec.of(Segment.range(0, 5));
+        var spec = KeySpec.of(new RangeSegment(0, 5));
         var cmp = spec.comparator();
 
         // shorter vs longer within compared range
@@ -107,8 +108,8 @@ class KeySpecTest {
     @Test
     void comparatorWithCustomKeyComparatorShouldUseExtractKey() {
         var spec = KeySpec.of(
-                Segment.range(0, 3),  // key part 1
-                Segment.range(4, 7)   // key part 2
+                new RangeSegment(0, 3),  // key part 1
+                new RangeSegment(4, 7)   // key part 2
         );
 
         Comparator<String> reverse = Comparator.reverseOrder();
@@ -127,11 +128,10 @@ class KeySpecTest {
     @Test
     void comparatorWithCustomIntegerComparatorShouldUseSorterByNumber() {
         var spec = KeySpec.of(
-                Segment.range(0, 6) // key part 2
+                new RangeSegment(0, 6,Mode.INT) // key part 2
         );
 
-        Comparator<String> byIntKey =
-                spec.comparator(Integer::parseInt, Integer::compare);
+        Comparator<String> byIntKey =spec.comparator();
         var cmp = spec.comparator(byIntKey);
 
         // reverse order => "005" -> "5"  > "0003" -> "3"=> compare should be > 0
@@ -143,7 +143,7 @@ class KeySpecTest {
 
     @Test
     void comparatorShouldThrow_whenKeyComparatorIsNull() {
-        var spec = KeySpec.of(Segment.range(0, 3));
+        var spec = KeySpec.of(new RangeSegment(0, 3));
 
         assertThatThrownBy(() -> spec.comparator((Comparator<String>) null))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -152,9 +152,9 @@ class KeySpecTest {
 
     @Test
     void recordBasicsShouldWork() {
-        var a = KeySpec.of(Segment.range(0, 3));
-        var b = KeySpec.of(Segment.range(0, 3));
-        var c = KeySpec.of(Segment.range(0, 2));
+        var a = KeySpec.of(new RangeSegment(0, 3));
+        var b = KeySpec.of(new RangeSegment(0, 3));
+        var c = KeySpec.of(new RangeSegment(0, 2));
 
         assertThat(a).isEqualTo(b);
         assertThat(a.hashCode()).isEqualTo(b.hashCode());
@@ -209,7 +209,7 @@ class KeySpecTest {
     void comparatorShouldWorkWithMixedSegments() {
         // First compare the first char (range), then 2 chars after the first delimiter
         var spec = KeySpec.of(
-                Segment.range(0, 1),
+                new RangeSegment(0, 1),
                 new DelimitedSegment('|', 0, 2, Mode.LEX)
         );
 
