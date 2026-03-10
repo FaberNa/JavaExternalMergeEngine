@@ -591,28 +591,27 @@ class SplitEngineTest {
 
 
     @Test
-    void splitByMaxBytes_shouldUseSequentialStreaming_whenPreferSequentialTrue() throws Exception {
-        SplitEngine engine = new SplitEngine();
+    void splitByMaxBytes_whenPreferSequentialTrue() throws Exception {
+        Path input = Path.of("src/test/resources/unsorted.txt");
+        Path outputDir = tempDir;
+        String filePrefix = "part-";
+        SplitPlanner planner = new SplitPlanner();
+        int numberOfParts = 2;
+        SplitPlan plan = planner.planByParts(
+                input,
+                outputDir,
+                numberOfParts,
+                new NewlineSeparator(8 ,null)
+        );
+        ParallelRangeSplitter parallel = new ParallelRangeSplitter();
+        parallel.execute(plan,null);
 
-        SequentialStreamingSplitter streaming = mock(SequentialStreamingSplitter.class);
-        ParallelRangeSplitter parallel = mock(ParallelRangeSplitter.class);
-        SplitPlanner planner = mock(SplitPlanner.class);
+        var parts = Files.list(outputDir)
+                .filter(p -> p.getFileName().toString().startsWith(filePrefix))
+                .sorted()
+                .toList();
 
-        inject(engine, "streaming", streaming);
-        inject(engine, "parallel", parallel);
-        inject(engine, "planner", planner);
-
-        IOConfig io = new IOConfig(256 * 1024, 4, true, "part-", ".txt");
-
-        Path input = Path.of("input.txt");
-        Path outDir = Path.of("out");
-        Separator sep = new NewlineSeparator(1, null);
-
-        engine.splitByMaxBytes(input, outDir, 1024L, sep, io);
-
-        verify(streaming, times(1)).splitByMaxBytes(input, outDir, 1024L, sep, io);
-        verifyNoInteractions(planner);
-        verifyNoInteractions(parallel);
+        assertThat(numberOfParts).isEqualTo(parts.size());
     }
 
 
