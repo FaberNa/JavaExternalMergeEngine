@@ -2,6 +2,12 @@
 
 # JavaExternalMergeEngine
 
+Behind the scenes of a classic external sort workflow, below there is a more detailed look at the main components and abstractions involved in the implementation. 
+Here in the image was explain the big picutre of the external sort pipeline, and below we will dive into the details of each component.
+
+![alt text](doc/main_scenario.png "Main scenario")
+
+
 ## SortedSplitEngine
 
 `SortedSplitEngine` is the component that creates **sorted runs** during the split phase of the
@@ -206,6 +212,7 @@ The design follows these principles:
 - Predictable behavior in edge cases (short lines, missing delimiters)
 
 This model enables flexible, high-performance external sorting strategies over very large files.
+
 
 
 
