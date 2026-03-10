@@ -100,7 +100,7 @@ class SplitEngineTest {
     }
 
     @Test
-    void shouldSplitFileByParts() throws Exception {
+    void shouldSplitFileByPartsWithParallelismCustom() throws Exception {
 
         Path input = Path.of("src/test/resources/unsorted.txt");
         Path outputDir = tempDir;
@@ -156,6 +156,169 @@ class SplitEngineTest {
         assertEquals(inputSize, totalSize, "Sum of parts must equal original file size");
     }
 
+    @Test
+    void shouldSplitFileByPartsWithParallelismDefault() throws Exception {
+
+        Path input = Path.of("src/test/resources/unsorted.txt");
+        Path outputDir = tempDir;
+        //Path outputDir = Path.of("src/test/resources/output");;
+
+        SplitEngine engine = new SplitEngine();
+
+        String filePrefix = "partBig-";
+        IOConfig io = new IOConfig(
+                8 * 1024 * 1024,   // copy buffer
+                1,                 // parallelism
+                false,             // preferSequential
+                filePrefix,
+                ".txt"
+        );
+
+        int numberOfParts = 2;
+        engine.splitByParts(
+                input,
+                outputDir,
+                numberOfParts,
+                new NewlineSeparator(io.copyBufferBytes(), null),
+                io
+        );
+
+        // ---- Assertions ----
+
+        // List generated files
+        var parts = Files.list(outputDir)
+                .filter(p -> p.getFileName().toString().startsWith(filePrefix))
+                .sorted()
+                .toList();
+
+        long inputSize = Files.size(input);
+
+        long expectedParts = parts.size();
+
+
+        assertEquals(expectedParts, numberOfParts,
+                "Number of generated parts does not match expected division");
+
+
+        long totalSize = 0;
+
+        for (int i = 0; i < parts.size(); i++) {
+            long size = Files.size(parts.get(i));
+            totalSize += size;
+
+            assertThat(totalSize).isLessThanOrEqualTo(inputSize );
+        }
+
+        // Ensure total size matches original file
+        assertEquals(inputSize, totalSize, "Sum of parts must equal original file size");
+    }
+
+    @Test
+    void shouldSplitFileByPartsWithSequentialandIOConfigCustom() throws Exception {
+
+        Path input = Path.of("src/test/resources/unsorted.txt");
+        Path outputDir = tempDir;
+        //Path outputDir = Path.of("src/test/resources/output");;
+
+        SplitEngine engine = new SplitEngine();
+
+        String filePrefix = "partBig-";
+        IOConfig io = new IOConfig(
+                8 * 1024 * 1024,   // copy buffer
+                1,                 // parallelism
+                true,             // preferSequential
+                filePrefix,
+                ".txt"
+        );
+
+        int numberOfParts = 2;
+        engine.splitByParts(
+                input,
+                outputDir,
+                numberOfParts,
+                new NewlineSeparator(io.copyBufferBytes(), null),
+                io
+        );
+
+        // ---- Assertions ----
+
+        // List generated files
+        var parts = Files.list(outputDir)
+                .filter(p -> p.getFileName().toString().startsWith(filePrefix))
+                .sorted()
+                .toList();
+
+        long inputSize = Files.size(input);
+
+        long expectedParts = parts.size();
+
+
+        assertEquals(expectedParts, numberOfParts,
+                "Number of generated parts does not match expected division");
+
+
+        long totalSize = 0;
+
+        for (int i = 0; i < parts.size(); i++) {
+            long size = Files.size(parts.get(i));
+            totalSize += size;
+
+            assertThat(totalSize).isLessThanOrEqualTo(inputSize );
+        }
+
+        // Ensure total size matches original file
+        assertEquals(inputSize, totalSize, "Sum of parts must equal original file size");
+    }
+
+    @Test
+    void shouldSplitFileByPartsWithIOConfigDefault() throws Exception {
+
+        Path input = Path.of("src/test/resources/unsorted.txt");
+        Path outputDir = tempDir;
+        //Path outputDir = Path.of("src/test/resources/output");;
+
+        SplitEngine engine = new SplitEngine();
+
+        String filePrefix = "part-";
+
+        int numberOfParts = 2;
+        engine.splitByParts(
+                input,
+                outputDir,
+                numberOfParts,
+                new NewlineSeparator(8*1024, null),
+                null
+        );
+
+        // ---- Assertions ----
+
+        // List generated files
+        var parts = Files.list(outputDir)
+                .filter(p -> p.getFileName().toString().startsWith(filePrefix))
+                .sorted()
+                .toList();
+
+        long inputSize = Files.size(input);
+
+        long expectedParts = parts.size();
+
+
+        assertEquals(expectedParts, numberOfParts,
+                "Number of generated parts does not match expected division");
+
+
+        long totalSize = 0;
+
+        for (int i = 0; i < parts.size(); i++) {
+            long size = Files.size(parts.get(i));
+            totalSize += size;
+
+            assertThat(totalSize).isLessThanOrEqualTo(inputSize );
+        }
+
+        // Ensure total size matches original file
+        assertEquals(inputSize, totalSize, "Sum of parts must equal original file size");
+    }
     @Test
     void shouldSplitAndSortParallelFileByMaxBytes() throws Exception {
 
