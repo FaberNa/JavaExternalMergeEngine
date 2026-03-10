@@ -211,7 +211,7 @@ This model enables flexible, high-performance external sorting strategies over v
 
 
 
-How to for test 
+How to generate file for test 
 
 gawk 'BEGIN{
 payload="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
